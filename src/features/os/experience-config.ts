@@ -23,8 +23,8 @@ export const experienceConfig: ExperienceConfig = {
   simulationPin: DEFAULT_SIMULATION_PIN,
   lockScreen: {
     wallpaper: { image: "/wallpapers/lock-screen.jpg", position: "50% 50%", fallback: "aurora" },
-    clockColor: "#ffffff",
-    dateColor: "#ffffff",
+    clockColor: "#FF9A4D",
+    dateColor: "#FF9A4D",
   },
   homeWallpaper: { position: "50% 50%", fallback: "aurora" },
   apps: [
