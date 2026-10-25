@@ -1,6 +1,6 @@
 # Device Shell Design System
 
-Status: Phase 3. Device geometry remains as established in Phase 2; OS presentation is described below. This is a fictional browser-rendered device, not real iOS hardware or OS behavior.
+Status: Phase 4. Device geometry remains as established in Phase 2; OS presentation and motion are described below. This is a fictional browser-rendered device, not real iOS hardware or OS behavior.
 
 ## Reference and geometry
 
@@ -54,11 +54,11 @@ Safe-area values are **virtual device** geometry, not readings from the user's a
 
 The chassis is graphite with layered metal gradients, inset hairlines, a dark glass seam, and soft contact/ambient shadows. Decorative side controls add a recognizable hardware silhouette in framed presentation. Rounded glass and the island supply the main hardware cues without copying logos or proprietary mockups.
 
-The surrounding stage follows `prefers-color-scheme`: a quiet mineral background in light mode and charcoal in dark mode. Chassis highlights remain visible against both. The display retains its own consistent dark palette. The composition has no animation, so reduced motion has no alternate timing or transition to manage.
+The surrounding stage follows `prefers-color-scheme`: a quiet mineral background in light mode and charcoal in dark mode. Chassis highlights remain visible against both. The display retains its own consistent dark palette. Only OS content animates; chassis, island, status bar, and wallpaper remain stable.
 
 The placeholder wallpaper is an original CSS composition: overlapping elliptical forms, lavender and rose highlights, and deep blue shadows with a dark lower scrim for text legibility. `wallpaper="midnight"` changes its hue, saturation, and brightness through CSS. Changing wallpaper does not change application state or access local data.
 
-The Lock Screen visibly says **PLACEHOLDER EXPERIENCE**. Home Screen grid icons each carry a Placeholder subtitle, with a **PLACEHOLDER APPS** heading and **PLACEHOLDER DOCK** caption for the dock. Every app control has an accessible placeholder label, and its informational view repeats **PLACEHOLDER APP**. The previous Phase 2 landing content is no longer the default experience. Wallpaper and hardware decoration are hidden from assistive technology.
+The Lock Screen visibly says **PLACEHOLDER EXPERIENCE**. Home Screen has one unobtrusive **PLACEHOLDER** marker, a visually hidden Home Screen heading, and no repeated icon subtitles or dock caption. Every app control retains its accessible placeholder name, and the informational view repeats **PLACEHOLDER APP**. Wallpaper and hardware decoration are hidden from assistive technology.
 
 ## Asset policy
 
@@ -72,7 +72,7 @@ Tests inspect geometric relationships, centered island placement, status indicat
 
 Zoom coverage uses a 683x384 CSS viewport (the reflow space of 1366x768 at 200%) and additional 200% root text sizing. It verifies content remains scrollable and the island remains fixed. This is an automated reflow/enlarged-text approximation, not a manual test of the browser's zoom menu. Native Safari, browser chrome transitions, and physical-device behavior still need later review.
 
-Historical Phase 2 screenshots remain in ignored local artifacts at `artifacts/phase-2/`. Phase 3 tests generate lock and home screenshots in `artifacts/phase-3/`. Re-run E2E to regenerate current screenshots. Representative Phase 3 files:
+Historical screenshots remain in ignored local artifacts at `artifacts/phase-2/` and `artifacts/phase-3/`. Current tests generate lock and home screenshots in `artifacts/phase-4/`. Re-run E2E to regenerate them. Representative files:
 
 - `lock-320x568.png` and `home-320x568.png`
 - `lock-393x852.png` and `home-393x852.png`
@@ -85,12 +85,36 @@ Historical Phase 2 screenshots remain in ignored local artifacts at `artifacts/p
 
 ## Phase 3 OS presentation
 
-The Lock Screen uses a centered, light-weight clock with container-aware sizing, a date above it, a small lock symbol, and generous negative space. Bottom flashlight/camera-style controls are 52px circles; a separate native unlock button is keyboard accessible. There is no swipe requirement or gesture recognition.
+The Lock Screen uses a centered, light-weight clock with container-aware sizing, a date above it, a small lock symbol, and generous negative space. Phase 4 refines clock tracking, date spacing, shadows, and bottom control depth. Flashlight/camera-style controls remain 52px circles. A lower swipe affordance sits above a separate native unlock button; gestures are optional.
 
 The status bar is an OS-owned overlay: clock at left, cellular/Wi-Fi/battery artwork at right, aligned vertically to the existing island and kept outside its horizontal bounds. Its 100% battery and full signal are simulated constants, not live device readings. The home indicator is a decorative 5px pill in the bottom virtual safe area; it does not imply a gesture.
 
 Home uses a four-column grid, original rounded-square app symbols, and a translucent dock with blur and a non-blur background fallback. Grid and dock metadata are editable in `src/features/os/experience-config.ts`. Icon sizes respond to available width, while labels keep normal CSS font sizing. Additional configured apps flow into more rows and scroll normally. Dock items are intended for four slots; the current placeholder configuration uses four.
 
-The screen scroller remains the only content scroll area. Short landscape and enlarged text may require scrolling to reach controls; the status bar, island, and home indicator remain fixed. Buttons and focused headings have visible outlines, and navigation restores focus. Navigation has no animation, preserving reduced-motion behavior; advanced motion is reserved for Phase 4.
+The screen scroller remains the only content scroll area. Short landscape and enlarged text may require scrolling to reach controls; the status bar, island, and home indicator remain fixed. Buttons and focused headings have visible outlines, and navigation restores focus. The hidden Home Screen heading remains available to assistive technology without occupying regular layout space.
 
 Configuration uses `clock`, `date`, and an ISO `dateTime` as a coherent fixed placeholder, plus `wallpaper: "aurora" | "midnight"`. No live clock is enabled. If live time is added later, initialize it only after hydration and clean up client timers. Wallpaper stays consistent across lock, home, and app placeholders because it belongs to the same enclosing shell.
+
+## Phase 4 motion and gesture policy
+
+The shared spring has stiffness 380, damping 36, and mass 0.85. It is intentionally restrained. Scene transitions and icon presses animate transforms and opacity, not layout dimensions, wallpaper filters, or backdrop blur. Resting scene scale is always 1; these transient transitions do not replace responsive CSS sizing.
+
+| Interaction | Default motion | Reduced motion |
+| --- | --- | --- |
+| Lower-region drag | Lock panel follows vertical displacement with linked opacity | Gesture recognized without large panel displacement |
+| Incomplete/cancelled swipe | Spring back to zero | Immediate reset |
+| Unlock | Lock lifts/fades; Home settles from a slight zoom | Immediate scene change |
+| Open placeholder | App surface expands from selected icon's approximate normalized origin | Immediate scene change |
+| Return home | App contracts toward its origin; Home settles into place | Immediate scene change |
+| Relock | Lock descends gently; Home recedes | Immediate scene change |
+| Icon press | Scale to 0.92 | Opacity feedback, without scaling |
+
+The drag handle has a 10px recognition threshold. Unlock distance is 18% of the content viewport height, clamped to 72–120px. Upward distance must exceed 1.4 times horizontal travel. Taps, short flicks, downward motion, horizontal drags, touch cancellation, and blur do not unlock. A cancelled spring can be grabbed again. Touch-action suppression and text-selection suppression are limited to the handle; no global scroll lock is added. The handle is above the browser's bottom edge and the decorative home indicator.
+
+App opening reads the selected icon and scene rectangles once per click to derive a transform origin. This is an approximate visual origin, not a shared-element window manager. Scene state changes immediately; exit animations are decorative, inert, and hidden from assistive technology. Focus does not wait for springs to finish. Repeated or interrupted navigation must not leave a locked input gate or a half-completed navigation state.
+
+Home icons use coherent rounded-square geometry, refined shadows, single-line labels, and the existing four-column portrait grid. Labels truncate with ellipsis on exceptionally narrow or enlarged-text layouts rather than breaking into letters; full accessible names and hover titles remain available. The dock uses static translucent gradients, blur, saturation, and inset highlights. No proprietary artwork is used.
+
+Reduced-motion media changes are observed after hydration through `useSyncExternalStore`, with a deterministic server snapshot. Initial SSR and hydration do not depend on browser preferences. Automated testing checks reduced-motion console errors, live preference changes, active transform values, input alternatives, and correct focus restoration. Motion API references: [manual drag controls](https://motion.dev/docs/react-use-drag-controls) and [presence transitions](https://motion.dev/docs/react-animate-presence).
+
+Tests use Chromium mouse input and Chromium CDP touch events in the mobile context. They are not physical-device or Safari gesture verification. Static screenshots review settled appearance, not animation cadence; real-device feel still benefits from manual review. Phase 5 is not included.

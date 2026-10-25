@@ -4,13 +4,15 @@
 
 This project is a reading experience for **one alternate-universe story**, presented through a fictional phone simulation in the browser. It is not a SaaS product, an authoring platform, or a system for multiple stories.
 
-Phase 1 provides the project foundation. Phase 2 adds the responsive physical Device Shell. Phase 3 adds simulated lock/home screens and basic navigation to clearly identified app placeholders. Do not build real virtual app functionality, story runtime, persistence, advanced gestures, or elaborate spring animations until the relevant phase is requested. The final story and virtual app list are undecided; clearly label all temporary content **PLACEHOLDER**.
+Phase 1 provides the project foundation. Phase 2 adds the responsive physical Device Shell. Phase 3 adds simulated lock/home screens and app placeholders. Phase 4 adds lower-region swipe unlock, OS motion, and visual refinement. Do not build real virtual app functionality, story runtime, persistence, or additional product features until the relevant phase is requested. The final story and virtual app list are undecided; clearly label all temporary content **PLACEHOLDER**.
 
 Primary technical decision document: [docs/architecture.md](docs/architecture.md).
 
 Device geometry, safe areas, responsive rules, and asset policy: [docs/design-system.md](docs/design-system.md). Keep the shell as Server Components without application state, and do not scale future interactive content with a universal transform.
 
 OS state belongs in `src/features/os`, never in the shell. Initial time/date must be deterministic; the current configuration intentionally uses a fixed placeholder clock without live time. Do not request camera, flashlight, network, battery, or OS permissions for simulated controls.
+
+Motion must remain presentational: update navigation immediately, never gate it on animation callbacks. Exiting scenes must be inert and hidden from assistive technology. Keep a native unlock button and native scrolling outside the dedicated swipe surface. Use the hydration-safe reduced-motion hook for OS motion decisions.
 
 ## Technology standards
 

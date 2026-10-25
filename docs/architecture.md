@@ -1,6 +1,6 @@
 ﻿# Interactive AU Architecture
 
-Status: Phase 3 lock/home simulation built on the Phase 2 Device Shell and Phase 1 foundation. The five boundaries remain authoritative. Virtual app functionality, story runtime, and persistence remain planned.
+Status: Phase 4 OS motion, gestures, and visual refinement built on the Phase 3 lock/home simulation. The five boundaries remain authoritative. Virtual app functionality, story runtime, and persistence remain planned.
 
 ## Product goals and boundaries
 
@@ -135,6 +135,17 @@ Tests follow implemented behavior. Do not create tests for speculative UI or fea
 - Original SVG line art supplies app and control symbols. No dependencies or runtime asset requests were added. Navigation is immediate; advanced gestures and spring transitions remain reserved for Phase 4.
 - Playwright now uses static-preview port 4173 to avoid interfering with the user's dev server on port 3000. Existing npm scripts, build configuration, dependency versions, and CI remain unchanged. E2E covers deterministic startup, relocking/reload, focus restoration, simulated shortcuts, all required viewports, indicator clearance, both color schemes, and enlarged-text reflow.
 
-The story and final app list remain open product decisions. Phase 4 must be requested separately; it is not started automatically.
+## Phase 4 decisions
+
+- OS motion uses the already-installed Motion for React package; no dependencies, shell geometry, hosting configuration, npm scripts, or CI changes are needed. `LockScreen` owns its gesture and simulated shortcut feedback. `OsScene` owns presentational transitions and focus on entry. `OsExperience` continues composing views from the Zustand navigation state.
+- The Zustand view remains the single source of navigation truth. Actions are guarded and repeated lock/unlock/open/home requests are idempotent. Navigation updates immediately and never depends on animation completion. Local launch metadata stores only the last icon ID and normalized transform origin for presentation and focus restoration.
+- `AnimatePresence` uses simultaneous entry/exit. Exiting scenes become inert, aria-hidden, non-interactive, and absolutely positioned so they do not determine the active layout height. Their test IDs are removed. The active scene receives focus immediately; return-home restores the launching icon. A scene revived during an interrupted exit resumes safely, and a revived Lock Screen resets drag displacement.
+- Dragging begins only on the lower, explicitly marked gesture surface through `useDragControls` with automatic listeners disabled. A Motion value drives vertical displacement and linked opacity without React state updates per pointer move. Release requires a bounded, viewport-relative upward distance and a predominantly vertical direction; short/diagonal/downward motion cancels. Touch cancellation and browser blur reset the gesture. Velocity alone never unlocks.
+- Native scrolling remains available outside the swipe surface. Only that surface uses `touch-action: none`; the native unlock button remains separate. Reduced motion keeps gesture recognition but removes its large visual displacement and uses immediate scene changes with opacity-only press feedback.
+- `useOsReducedMotion` uses React's external-store hydration contract: a deterministic server snapshot is reused for hydration, then the media preference is synchronized and observed for changes. MotionConfig receives the synchronized policy. No matchMedia reads occur during server rendering, and fixed time/date remain unchanged.
+- Home Screen has a visually hidden accessible heading and one small visible PLACEHOLDER marker. Repeated icon subtitles and the dock caption are removed; full placeholder names remain on every button. Labels stay on one line with ellipsis only when necessary, retaining complete accessible names and hover titles. Motion changes only transient visual transforms/opacity, not responsive application sizing.
+- Tests retain the Phase 3 behavior and shell checks and add continuous mouse drag, touch input/cancellation, invalid gesture starts, spring-back, blur cancellation, rapid/interrupted navigation, icon press/origin, reduced-motion hydration and preference changes, and narrow/landscape layout. Screenshots are generated under `artifacts/phase-4/`.
+
+The story and final app list remain open product decisions. Phase 5 must be requested separately; it is not started automatically.
 
 Project documentation is written in English. User-facing progress updates and completion reports are written in Indonesian.

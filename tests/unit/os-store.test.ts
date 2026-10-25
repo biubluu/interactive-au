@@ -2,6 +2,18 @@ import { describe, expect, it } from "vitest";
 import { createOsStore } from "../../src/features/os/os-store";
 
 describe("transient OS navigation", () => {
+  it("does not emit duplicate navigation on repeated actions", () => {
+    const store = createOsStore(["notes"]);
+    let changes = 0;
+    store.subscribe(() => { changes += 1; });
+    for (let index = 0; index < 10; index += 1) store.getState().unlock();
+    for (let index = 0; index < 10; index += 1) store.getState().openApp("notes");
+    for (let index = 0; index < 10; index += 1) store.getState().goHome();
+    for (let index = 0; index < 10; index += 1) store.getState().lock();
+    expect(changes).toBe(4);
+    expect(store.getState().view).toEqual({ kind: "lock" });
+  });
+
   it("starts locked and prevents app access before unlocking", () => {
     const store = createOsStore(["notes"]);
     store.getState().openApp("notes");

@@ -15,7 +15,7 @@ export function createOsStore(appIds: readonly string[]) {
   return createStore<OsState>((set, get) => ({
     view: { kind: "lock" },
     unlock: () => { if (get().view.kind === "lock") set({ view: { kind: "home" } }); },
-    lock: () => set({ view: { kind: "lock" } }),
+    lock: () => { if (get().view.kind !== "lock") set({ view: { kind: "lock" } }); },
     openApp: (id) => {
       if (get().view.kind === "home" && allowedApps.has(id)) set({ view: { kind: "app", appId: id } });
     },

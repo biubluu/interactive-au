@@ -1,4 +1,4 @@
-﻿import AxeBuilder from "@axe-core/playwright";
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 const viewports = [
@@ -41,14 +41,14 @@ for (const viewport of viewports) {
     if (!timeBox || !indicatorsBox) throw new Error("Missing status indicators");
     expect(timeBox.x + timeBox.width).toBeLessThanOrEqual(islandBox.x);
     expect(indicatorsBox.x).toBeGreaterThanOrEqual(islandBox.x + islandBox.width);
-    await page.screenshot({ path: `artifacts/phase-3/lock-${viewport.width}x${viewport.height}.png`, fullPage: true });
+    await page.screenshot({ path: `artifacts/phase-4/lock-${viewport.width}x${viewport.height}.png`, fullPage: true });
 
     const unlock = page.getByRole("button", { name: "Unlock", exact: true });
     expect((await unlock.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     await unlock.click();
     await expect(page.getByRole("heading", { name: /Home Screen/ })).toBeFocused();
     expect(await page.getByTestId("device-content").evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
-    await page.screenshot({ path: `artifacts/phase-3/home-${viewport.width}x${viewport.height}.png`, fullPage: true });
+    await page.screenshot({ path: `artifacts/phase-4/home-${viewport.width}x${viewport.height}.png`, fullPage: true });
     for (const button of await page.getByRole("button", { name: /Open .*PLACEHOLDER/ }).all()) {
       expect((await button.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     }
@@ -80,7 +80,7 @@ test("lock, home, and app placeholder are accessible in both surroundings", asyn
       const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
       expect(results.violations).toEqual([]);
       if (colorScheme === "dark" && view !== "app") {
-        await page.screenshot({ path: `artifacts/phase-3/${view}-${testInfo.project.name}-dark.png`, fullPage: true });
+        await page.screenshot({ path: `artifacts/phase-4/${view}-${testInfo.project.name}-dark.png`, fullPage: true });
       }
     }
   }
@@ -101,5 +101,5 @@ test("navigation reflows with enlarged text and keeps the island fixed", async (
   expect(await page.getByTestId("device-content").evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
   expect((await page.getByTestId("dynamic-island").boundingBox())?.y).toBe(islandBefore?.y);
   expect(await page.getByTestId("device-screen").evaluate((element) => element.scrollTop)).toBe(0);
-  await page.screenshot({ path: `artifacts/phase-3/home-zoom-${testInfo.project.name}.png`, fullPage: true });
+  await page.screenshot({ path: `artifacts/phase-4/home-zoom-${testInfo.project.name}.png`, fullPage: true });
 });
