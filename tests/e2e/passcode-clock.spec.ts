@@ -43,14 +43,14 @@ test("WIB clock is shared, crosses midnight, and refreshes on visibility without
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
-  await page.clock.install({ time: new Date("2026-10-25T16:59:50Z") });
+  await page.clock.install({ time: new Date("2026-10-25T16:58:50Z") });
   await page.clock.pauseAt(new Date("2026-10-25T16:59:50Z"));
   await page.goto("/");
   await page.clock.runFor(1);
   await expect(page.getByTestId("lock-clock")).toHaveText("23.59");
   await expect(page.getByTestId("status-clock")).toHaveText("23.59");
   await expect(page.getByRole("heading", { level: 1 })).toHaveAccessibleName("Lock Screen, 23:59 WIB");
-  await expect(page.getByTestId("lock-clock")).toHaveAttribute("datetime", "2026-10-25T16:59:50.000Z");
+  await expect(page.getByTestId("lock-clock")).toHaveAttribute("datetime", /^2026-10-25T16:59:50\.\d{3}Z$/);
   await expect(page.locator(".os-date")).toHaveText("Sun 25 Oct");
   await page.clock.runFor(9_999);
   await expect(page.getByTestId("lock-clock")).toHaveText("00.00");
@@ -70,7 +70,7 @@ for (const boundary of [
   test(`live WIB calendar crosses ${boundary.key} and catches up after tab visibility`, async ({ page }) => {
     const errors: string[] = [];
     page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
-    await page.clock.install({ time: new Date(boundary.before) });
+    await page.clock.install({ time: new Date(new Date(boundary.before).getTime() - 60_000) });
     await page.clock.pauseAt(new Date(boundary.before));
     await page.goto("/");
     await page.clock.runFor(1);

@@ -26,7 +26,15 @@ test("glass styling and inward shortcut symmetry hold across compact, framed, an
     expect(left.width).toBeGreaterThanOrEqual(44);
     expect(left.height).toBeGreaterThanOrEqual(44);
     expect(swipe.y).toBeGreaterThanOrEqual(left.y + left.height);
-    const date = await page.locator(".os-date time").boundingBox();
+    const dateText = page.locator(".os-date time");
+    await expect(dateText).toHaveCSS("padding", "0px");
+    await expect(dateText).toHaveCSS("border-radius", "0px");
+    await expect(dateText).toHaveCSS("border-top-width", "0px");
+    await expect(dateText).toHaveCSS("box-shadow", "none");
+    await expect(dateText).toHaveCSS("backdrop-filter", "none");
+    await expect(dateText).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    await expect(dateText).toHaveCSS("background-clip", "text");
+    const date = await dateText.boundingBox();
     if (!date) throw new Error("Missing date surface");
     expect(date.width).toBeLessThan(glass.width * 0.6);
     await page.getByRole("button", { name: "Enter passcode", exact: true }).click();
@@ -49,13 +57,13 @@ test("solid text and tinted surfaces remain readable and operable without glass 
   // Force the documented fallback appearance on a modern browser; this does not
   // claim to emulate an older browser's CSS parser.
   await page.addStyleTag({ content: `
-    :is(.os-shortcut, .os-pin-key, .os-date time) {
+    :is(.os-shortcut, .os-pin-key) {
       -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
       background: #2023349c !important;
     }
-    .os-clock time {
-      background: none !important; color: var(--lock-clock-color, #fff) !important;
-      -webkit-text-fill-color: var(--lock-clock-color, #fff) !important;
+    :is(.os-clock, .os-date) time {
+      background: none !important; color: var(--lock-text-color) !important;
+      -webkit-text-fill-color: var(--lock-text-color) !important;
     }
   ` });
   await expect(page.getByTestId("lock-clock")).toHaveCSS("color", "rgb(255, 255, 255)");
