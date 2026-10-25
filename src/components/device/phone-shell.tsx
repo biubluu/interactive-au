@@ -4,10 +4,11 @@ import "./device.css";
 type PhoneShellProps = Readonly<{
   children: ReactNode;
   wallpaper?: "aurora" | "midnight";
+  overlay?: ReactNode;
 }>;
 
 /** Physical presentation only. Children own all future OS and story behavior. */
-export function PhoneShell({ children, wallpaper = "aurora" }: PhoneShellProps) {
+export function PhoneShell({ children, wallpaper = "aurora", overlay }: PhoneShellProps) {
   return (
     <div className="phone-shell" data-wallpaper={wallpaper}>
       <div className="device-frame" data-testid="device-frame">
@@ -20,6 +21,7 @@ export function PhoneShell({ children, wallpaper = "aurora" }: PhoneShellProps) 
         <div className="device-screen" data-testid="device-screen">
           <div className="device-wallpaper" aria-hidden="true" />
           <DynamicIsland />
+          {overlay}
           <div className="device-content" data-testid="device-content">{children}</div>
         </div>
       </div>

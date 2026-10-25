@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Interactive AU | Project Foundation",
-  description: "PLACEHOLDER: the foundation for a single alternate-universe story.",
+  title: "Interactive AU | Fictional Phone Experience",
+  description: "PLACEHOLDER: an interactive fictional phone with simulated lock and home screens.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

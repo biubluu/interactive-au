@@ -1,6 +1,6 @@
 ﻿# Interactive AU Architecture
 
-Status: Phase 2 Device Shell built on the Phase 1 foundation. The five boundaries remain authoritative; only the App Router entry, physical Device Shell, and foundation tooling are implemented. OS, apps, runtime, and persistence remain planned.
+Status: Phase 3 lock/home simulation built on the Phase 2 Device Shell and Phase 1 foundation. The five boundaries remain authoritative. Virtual app functionality, story runtime, and persistence remain planned.
 
 ## Product goals and boundaries
 
@@ -124,6 +124,17 @@ Tests follow implemented behavior. Do not create tests for speculative UI or fea
 - React Hooks linting uses stable `eslint-plugin-react-hooks` 7.1.1, whose peer range supports ESLint 10. The incompatible JSX accessibility plugin is not forced into the dependency graph; `@axe-core/playwright` adds actual rendered-page accessibility checks in light/dark surroundings, alongside keyboard tests. These are browser checks, not accessibility lint rules or a complete manual audit.
 - Existing scripts and CI remain unchanged. Additional E2E tests cover requested viewports, landscape, rounded clipping, focus reachability, and enlarged-text reflow, and generate local screenshots. No OS state or speculative story tests are added.
 
-The story and app list remain open product decisions. Phase 3 must be requested separately; it is not started automatically.
+## Phase 3 decisions
+
+- `src/features/os` owns the lock/home presentation, simulated status indicators, shortcut feedback, placeholder app metadata, and navigation. The initial screen is the Lock Screen, replacing the previous landing page. The old landing-specific tests were updated to the requested initial experience; static rendering, keyboard/focus, clipping, responsive layout, and reduced-motion coverage are retained.
+- `OsExperience` is a Client Component with one Zustand vanilla store created per mount. A small discriminated view union represents lock, home, or a generic app placeholder. UI state is transient, isolated between instances, and resets to lock on reload. There is no persisted reader progress or shared mutable server store.
+- Every placeholder icon opens the same OS-owned informational view using its configured name/icon. Returning home restores focus to the launching icon; unlock focuses the home heading; relock focuses the unlock control. These views are not real Virtual Apps and do not establish the final app registry or story requirements.
+- `PhoneShell` remains a Server Component without OS imports or state. Its new generic `overlay` composition slot accepts OS-owned status chrome and a decorative home indicator. Geometry, clipping, and the safe-area scrolling viewport remain unchanged. The overlay is pointer-transparent and lies below the physical island.
+- `experience-config.ts` is trusted, typed local presentation configuration for wallpaper, fixed clock/date, and placeholder icon order/placement. Time remains fixed at 9:41 with an explicit ISO placeholder date. No browser clock, timers, connectivity, battery, camera, media, or flashlight APIs are used. First server render and hydration use the same data.
+- Shortcut buttons only update local visual feedback and an accessible status announcement. Flashlight has an `aria-pressed` state; the camera shortcut reports a simulated preview notice. Neither requests permissions or opens native functionality.
+- Original SVG line art supplies app and control symbols. No dependencies or runtime asset requests were added. Navigation is immediate; advanced gestures and spring transitions remain reserved for Phase 4.
+- Playwright now uses static-preview port 4173 to avoid interfering with the user's dev server on port 3000. Existing npm scripts, build configuration, dependency versions, and CI remain unchanged. E2E covers deterministic startup, relocking/reload, focus restoration, simulated shortcuts, all required viewports, indicator clearance, both color schemes, and enlarged-text reflow.
+
+The story and final app list remain open product decisions. Phase 4 must be requested separately; it is not started automatically.
 
 Project documentation is written in English. User-facing progress updates and completion reports are written in Indonesian.

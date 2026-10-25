@@ -20,12 +20,6 @@ body {
   background: radial-gradient(ellipse at 50% 40%, #fafaf8, #e1e2df);
 }
 
-.shell-demo {
-  position: relative;
-  overflow-wrap: anywhere;
-  padding-top: 32px;
-}
-
 @media (prefers-color-scheme: dark) {
   :root { background: #151619; color: #fafaf9; }
   .device-stage { background: radial-gradient(ellipse at 50% 40%, #303137, #131416); }

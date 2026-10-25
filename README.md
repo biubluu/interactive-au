@@ -1,6 +1,6 @@
 # Interactive AU
 
-Phase 2 physical Device Shell on the Phase 1 foundation for a single alternate-universe story. The current page is explicitly **PLACEHOLDER** content. The lock screen, home screen, OS navigation, virtual apps, story runtime, and persistence are not implemented.
+Phase 3 simulated Lock Screen and Home Screen inside the responsive fictional Device Shell. The experience opens locked, with a deterministic placeholder clock/date. Unlock to explore labeled placeholder icons and a translucent dock; each icon opens an informational placeholder and can return home. Real virtual app functionality, story runtime, and persistence are not implemented.
 
 Read [AGENTS.md](AGENTS.md) and [docs/architecture.md](docs/architecture.md) before making changes. Project documentation is in English; reports to the user are in Indonesian.
 
@@ -42,9 +42,9 @@ npm run build
 npm run test:e2e
 ```
 
-Playwright starts and stops the static preview server automatically. Port 3000 must be free. Tests run against desktop and mobile Chromium, exercising keyboard entry, placeholder navigation, reload, viewport fit, reduced motion, device clipping, and axe accessibility checks. Browser downloads require network access. Additional browser engines are outside this phase.
+Playwright starts and stops the static preview server automatically on port 4173, keeping the default development server on port 3000 separate. Port 4173 must be free. Tests run against desktop and mobile Chromium, exercising unlock/relock, app placeholder navigation, keyboard focus restoration, deterministic reload, simulated shortcuts, viewport fit, reduced motion, device clipping, and axe accessibility checks. Browser downloads require network access. Additional browser engines are outside this phase.
 
-The viewport matrix runs once in the desktop project; eight duplicate matrix cases are intentionally skipped in the mobile project. Screenshots for mobile, tablet, desktop, landscape, dark surroundings, and enlarged text are generated in `artifacts/phase-2/` (ignored by Git). See [docs/design-system.md](docs/design-system.md) for geometry, screenshot names, and zoom-test limitations. On restricted Windows environments, browser testing may require permission to launch and terminate the preview process.
+The viewport matrix runs once in the desktop project; eight duplicate matrix cases are intentionally skipped in the mobile project. Current screenshots for mobile, tablet, desktop, landscape, dark surroundings, and enlarged text are generated in `artifacts/phase-3/` (ignored by Git). See [docs/design-system.md](docs/design-system.md) for geometry, screenshot names, and zoom-test limitations. On restricted Windows environments, browser testing may require permission to launch and terminate the preview process.
 
 ## Continuous integration
 
@@ -54,4 +54,10 @@ The workflow assumes this `interactive-au/` directory is the Git repository root
 
 ## Scope
 
-Only `src/app` and `src/components/device` are needed now. The five architectural layers remain documented boundaries; other implementation folders are added when their phase is requested. Motion, Zustand, and Zod are installed but deliberately unused in this phase. The physical shell uses Server Components, CSS-generated wallpaper, and normal-size scrolling content without app state. Its public composition entry is `PhoneShell`, with `children` and optional `wallpaper="aurora" | "midnight"` props. No OS or story behavior is implied by the landing page.
+Application code lives in `src/app`, `src/components/device`, and `src/features/os`. The five architectural boundaries remain intact; other implementation folders are added when requested. Zustand holds only transient OS navigation. Motion and Zod remain installed for later responsibilities; advanced gestures and spring animations are reserved for Phase 4.
+
+The physical shell remains a Server Component with `children`, optional `wallpaper="aurora" | "midnight"`, and a generic `overlay` slot. It has no navigation state. The OS uses normal-size scrolling content and original CSS/SVG visuals. No real camera, flashlight, connectivity, battery, or OS APIs are accessed.
+
+## Presentation configuration
+
+Edit `src/features/os/experience-config.ts` to change the fixed `clock`, visible `date`, ISO `dateTime`, wallpaper variant, and placeholder icon metadata/order. Grid entries use `placement: "grid"`; the four dock entries use `placement: "dock"`. Keep IDs unique, names meaningful, and the time/date fields coherent. These are display placeholders, not the final story's app registry. Reload always returns to the Lock Screen; no state is saved locally and no live time is read.

@@ -1,6 +1,6 @@
 # Device Shell Design System
 
-Status: Phase 2. This document describes a fictional browser-rendered device, not real iOS hardware or OS behavior.
+Status: Phase 3. Device geometry remains as established in Phase 2; OS presentation is described below. This is a fictional browser-rendered device, not real iOS hardware or OS behavior.
 
 ## Reference and geometry
 
@@ -29,9 +29,9 @@ The Dynamic Island is decorative, horizontally centered, non-interactive, and hi
 
 ## Components and composition
 
-`PhoneShell` is the public Server Component. It accepts `children` and an optional typed `wallpaper` value (`aurora` or `midnight`). The frame and screen are simple markup inside it; separate exported components would add API surface without a current consumer. A private `DynamicIsland` component isolates the cutout markup.
+`PhoneShell` is the public Server Component. It accepts `children`, an optional typed `wallpaper` value (`aurora` or `midnight`), and a generic `overlay` React node for full-glass composition. The frame and screen are simple markup inside it; separate exported components would add API surface without a current consumer. A private `DynamicIsland` component isolates the cutout markup.
 
-The shell provides physical presentation only. The page owns the placeholder text, anchor, and target notice. The shell imports no stores, events, progress, OS navigation, or storage. Future OS content can be composed through `children` without changing this contract.
+The shell provides physical presentation only. The page composes OS content and OS-owned overlay chrome. The shell imports no stores, events, progress, OS navigation, or storage.
 
 ## Clipping and safe areas
 
@@ -39,7 +39,7 @@ The glass uses both `overflow: clip` and `clip-path: inset(0 round ...)`, togeth
 
 `.device-content` is the only internal scrolling viewport. Its top and bottom are inset by the virtual safe-area tokens, with inline padding and scroll padding for visible focus outlines. Unlike padding inside a full-height scroller, these insets keep scrolling text out of the island area. The island is a sibling above the content layer, so scrolling never changes its physical position. Long content, landscape presentation, and enlarged text remain reachable through ordinary scrolling and keyboard focus.
 
-Safe-area values are **virtual device** geometry, not readings from the user's actual phone. Do not substitute native `env(safe-area-inset-*)` values for these tokens or count the island clearance twice. Future OS screens should use these inherited tokens for fixed controls and scroll padding, and coordinate any full-bleed composition explicitly. This phase adds neither a status bar nor a home indicator.
+Safe-area values are **virtual device** geometry, not readings from the user's actual phone. Do not substitute native `env(safe-area-inset-*)` values for these tokens or count the island clearance twice. OS content uses the existing inset scroller; the status bar and decorative home indicator are composed through the full-glass overlay slot without changing physical geometry.
 
 ## Responsive presentation
 
@@ -58,30 +58,39 @@ The surrounding stage follows `prefers-color-scheme`: a quiet mineral background
 
 The placeholder wallpaper is an original CSS composition: overlapping elliptical forms, lavender and rose highlights, and deep blue shadows with a dark lower scrim for text legibility. `wallpaper="midnight"` changes its hue, saturation, and brightness through CSS. Changing wallpaper does not change application state or access local data.
 
-All temporary demo content sits under a visible **PLACEHOLDER / DEVICE STUDY** label; the entry target repeats **PLACEHOLDER** and explains that no story has started. The entry remains the native anchor from Phase 1. Wallpaper and hardware decoration are not read by assistive technology.
+The Lock Screen visibly says **PLACEHOLDER EXPERIENCE**. Home Screen grid icons each carry a Placeholder subtitle, with a **PLACEHOLDER APPS** heading and **PLACEHOLDER DOCK** caption for the dock. Every app control has an accessible placeholder label, and its informational view repeats **PLACEHOLDER APP**. The previous Phase 2 landing content is no longer the default experience. Wallpaper and hardware decoration are hidden from assistive technology.
 
 ## Asset policy
 
-No external assets, fonts, Apple artwork, or phone mockup libraries are used. The CSS artwork is authored in this repository. Any future local asset must have its source and license documented before use. Screenshot artifacts show only this project's original placeholder design.
+No external assets, fonts, Apple artwork, or phone mockup libraries are used. The CSS artwork and SVG icon paths are authored in this repository. Any future local asset must have its source and license documented before use. Screenshot artifacts show only this project's original placeholder design.
 
 ## Verification and screenshot review
 
 Run `npm run build` before `npm run test:e2e`: Playwright tests the actual `out/` export using the existing preview command. The viewport matrix covers 320x568, 375x667, 393x852, 430x932, 768x1024, 1366x768, 1920x1080, and 852x393 landscape. The matrix runs once in the desktop Chromium project; duplicate matrix cases in the mobile project are intentionally skipped. Existing mobile-project tests continue to cover touch-context entry behavior.
 
-Tests inspect geometric relationships, centered island placement, normal-size entry targets, reachable placeholder content, horizontal overflow, and an oversized descendant's hit testing at rounded corners. They do not compare font rasterization or require pixel-perfect screenshot matching. Axe checks WCAG A/AA rules in both surrounding color schemes; automated checks do not replace a manual accessibility audit.
+Tests inspect geometric relationships, centered island placement, status indicator clearance, normal-size unlock/app targets, reachable placeholder content, horizontal overflow, and an oversized descendant's hit testing at rounded corners. They do not compare font rasterization or require pixel-perfect screenshot matching. Axe checks WCAG A/AA rules on lock, home, and app placeholder views in both surrounding color schemes; automated checks do not replace a manual accessibility audit.
 
 Zoom coverage uses a 683x384 CSS viewport (the reflow space of 1366x768 at 200%) and additional 200% root text sizing. It verifies content remains scrollable and the island remains fixed. This is an automated reflow/enlarged-text approximation, not a manual test of the browser's zoom menu. Native Safari, browser chrome transitions, and physical-device behavior still need later review.
 
-Screenshots are written to ignored local artifacts in `artifacts/phase-2/`. Re-run E2E to regenerate them. Representative files:
+Historical Phase 2 screenshots remain in ignored local artifacts at `artifacts/phase-2/`. Phase 3 tests generate lock and home screenshots in `artifacts/phase-3/`. Re-run E2E to regenerate current screenshots. Representative Phase 3 files:
 
-- `device-320x568-light.png`
-- `device-393x852-light.png`
-- `device-768x1024-light.png`
-- `device-1366x768-light.png`
-- `device-1920x1080-light.png`
-- `device-852x393-light.png`
-- `device-desktop-chromium-dark.png`
-- `device-mobile-chromium-dark.png`
-- `device-zoom-desktop-chromium.png`
+- `lock-320x568.png` and `home-320x568.png`
+- `lock-393x852.png` and `home-393x852.png`
+- `lock-768x1024.png` and `home-768x1024.png`
+- `lock-1366x768.png` and `home-1366x768.png`
+- `lock-1920x1080.png` and `home-1920x1080.png`
+- `lock-852x393.png` and `home-852x393.png`
+- `lock-desktop-chromium-dark.png` and `home-desktop-chromium-dark.png`
+- `home-zoom-desktop-chromium.png`
 
-No Phase 3 OS behavior is included.
+## Phase 3 OS presentation
+
+The Lock Screen uses a centered, light-weight clock with container-aware sizing, a date above it, a small lock symbol, and generous negative space. Bottom flashlight/camera-style controls are 52px circles; a separate native unlock button is keyboard accessible. There is no swipe requirement or gesture recognition.
+
+The status bar is an OS-owned overlay: clock at left, cellular/Wi-Fi/battery artwork at right, aligned vertically to the existing island and kept outside its horizontal bounds. Its 100% battery and full signal are simulated constants, not live device readings. The home indicator is a decorative 5px pill in the bottom virtual safe area; it does not imply a gesture.
+
+Home uses a four-column grid, original rounded-square app symbols, and a translucent dock with blur and a non-blur background fallback. Grid and dock metadata are editable in `src/features/os/experience-config.ts`. Icon sizes respond to available width, while labels keep normal CSS font sizing. Additional configured apps flow into more rows and scroll normally. Dock items are intended for four slots; the current placeholder configuration uses four.
+
+The screen scroller remains the only content scroll area. Short landscape and enlarged text may require scrolling to reach controls; the status bar, island, and home indicator remain fixed. Buttons and focused headings have visible outlines, and navigation restores focus. Navigation has no animation, preserving reduced-motion behavior; advanced motion is reserved for Phase 4.
+
+Configuration uses `clock`, `date`, and an ISO `dateTime` as a coherent fixed placeholder, plus `wallpaper: "aurora" | "midnight"`. No live clock is enabled. If live time is added later, initialize it only after hydration and clean up client timers. Wallpaper stays consistent across lock, home, and app placeholders because it belongs to the same enclosing shell.
