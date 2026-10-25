@@ -5,6 +5,8 @@ coverage/
 playwright-report/
 test-results/
 artifacts/
+docs/
+test/
 *.tsbuildinfo
 .env*
 !.env.example
