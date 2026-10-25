@@ -1,5 +1,5 @@
 import { useId, type ReactNode } from "react";
-import type { IconName } from "./experience-config";
+export type IconName = "message" | "phone" | "camera" | "photo" | "note" | "calendar" | "map" | "music" | "mail" | "compass" | "settings" | "folder";
 
 /** Original local SVG artwork. No Apple assets, fonts, or external resources. */
 export function AppArtwork({ name }: Readonly<{ name: IconName }>) {

@@ -4,19 +4,19 @@
 
 This project is a reading experience for **one alternate-universe story**, presented through a fictional phone simulation in the browser. It is not a SaaS product, an authoring platform, or a system for multiple stories.
 
-Phases 1–4.1 provide the foundation, Device Shell, OS motion, passcode, live WIB clock, and fullscreen demos. Phase 4.2 provides independent wallpapers and the invisible accessible gesture surface. Phase 4.3 refines clock/date presentation, glass surfaces, and symmetric shortcut spacing only. Keep the canonical HH:mm clock model separate from displayed HH.mm; retain live shared WIB dates and the existing scheduler. Do not start Phase 5 or build real virtual app functionality, story runtime, persistence, or unrelated product features. The final story and app list remain undecided. Identify demo content as **PLACEHOLDER** in source comments and developer documentation; do not show prototype labels in normal reader presentation.
+Phases 1–4.1 provide the foundation, Device Shell, OS motion, passcode, live WIB clock, and fullscreen demos. Phase 4.2 provides independent wallpapers and the invisible accessible gesture surface. Phase 4.3 refines clock/date presentation, glass surfaces, and symmetric shortcut spacing only. Keep the canonical HH:mm clock model separate from displayed HH.mm; Phase 4.4 supersedes live time with a fixed shared fictional timestamp from experience configuration (11:11, Sat 17 Nov 2029), displayed as 11.11. No device-clock reads, active clock timers, or visibility listeners are needed. Phase 5.3 keeps Notes as fictional page-session data, refines its light canvas/icons/keyboard, and preserves the approved OS. Notes no longer accesses browser storage; a full reload restores dated seeds. Historical v1/v2 browser data must remain untouched. Do not start Phase 6, implement other candidate apps, Story Runtime progress, or unrelated features. The final story and app list remain undecided. Registered app components own only local internal navigation; the OS owns launching, closing, focus restoration, and the bottom Home gesture. Identify demo content as **PLACEHOLDER** in source comments and developer documentation; do not show prototype labels in normal reader presentation.
 
 Primary technical decision document: [docs/architecture.md](docs/architecture.md).
 
 Device geometry, safe areas, responsive rules, and asset policy: [docs/design-system.md](docs/design-system.md). Keep the shell as Server Components without application state, and do not scale future interactive content with a universal transform.
 
-OS state belongs in `src/features/os`, never in the shell. Initial time/date must be deterministic. One shared provider starts the live Asia/Jakarta clock only after hydration, schedules minute-boundary updates, refreshes on visibility, and cleans up timers/listeners. Do not request camera, flashlight, network, battery, or OS permissions for simulated controls.
+OS state belongs in `src/features/os`, never in the shell. Initial time/date must be deterministic. One shared provider supplies the configured fixed story timestamp identically during SSR and hydration. The old live-clock utilities remain isolated and inactive. Do not request camera, flashlight, network, battery, or OS permissions for simulated controls.
 
 Motion must remain presentational: update navigation immediately, never gate it on animation callbacks. Exiting scenes must be inert and hidden from assistive technology. The swipe affordance is also a semantic button; never make gestures the only unlock path. Keep native scrolling outside that surface and use the hydration-safe reduced-motion hook.
 
 The configured four-digit PIN (default `0411`, including its leading zero) is public storytelling simulation data, not a credential or security boundary. Presentation configuration uses the same default constant as the store. Digits belong only to the typed passcode view, never to persistence. Correct entry, cancel, and relock must discard them. Keep the Device Shell state-free; full-glass composition is generic, while OS scenes own fixed safe-area scroll viewports.
 
-Lock and Home wallpaper choices are independent local presentation configuration. Keep CSS fallbacks, cover cropping, adjustable positioning, and rounded clipping. Never replace a missing user image with unrelated imagery. The Lock Screen swipe button has an accessible name and visible keyboard focus but no visible instruction or arrow.
+Lock and Home share one typed local sunset wallpaper configuration; the approved Lock Screen styling is unchanged. Keep CSS fallbacks, cover cropping, adjustable positioning, and rounded clipping. Never replace a missing user image with unrelated imagery. The Lock Screen swipe button has an accessible name and visible keyboard focus but no visible instruction or arrow.
 
 ## Technology standards
 
@@ -32,7 +32,7 @@ Lock and Home wallpaper choices are independent local presentation configuration
 2. **OS Simulation** handles the lock screen, home screen, app navigation, and transitions.
 3. **Virtual Apps** are isolated modules registered through an explicit, typed registry.
 4. **Story Runtime** handles story events, flags, and reader progress without depending on UI rendering.
-5. **Persistence** stores non-sensitive reader progress locally through an adapter that validates data.
+5. **Persistence** owns browser storage adapters. No active Notes persistence adapter remains; future Story Runtime progress stays separate and unimplemented.
 
 Separate temporary UI state from persisted story progress. Do not access `localStorage` directly from components or story logic. The registry must not become a plugin system. Avoid complicated state machines, global event buses, speculative abstractions, and generalization for multiple stories.
 
@@ -63,3 +63,9 @@ Separate temporary UI state from persisted story progress. Do not access `localS
 5. Once tooling is available, run type checks, lint, unit tests, the static export build, and relevant E2E tests using actual project scripts. Never invent script names or test results.
 6. For documentation-only changes, check file existence, relative links, content consistency, and phase scope; application tests are unnecessary.
 7. Write project documentation, including this file and `docs/architecture.md`, in English. Report to the user in Indonesian: changed files, checks actually executed and their results, limitations, and next steps. Clearly identify checks that could not be run.
+
+Phase 5.1 input policy: Notes uses a native controlled textarea, a reusable callback-based virtual keyboard, and inputMode="none" by default. Keep native/hardware editing available through an explicit fallback. Keyboard suppression is browser-dependent, not guaranteed. Done and internal Back save; empty drafts create no record, and clearing a saved note removes it. OS Home discards only the unsaved draft. Browser storage must stay in the persistence adapter, be validated with Zod, and never be written before recovery. Corrupt or unsupported data must remain untouched while edits continue in session memory.
+
+Phase 5.2 refines Notes only. Per the author's correction, the shared presentation timeline is 2026-11-17T11:11:00+07:00 in Asia/Jakarta: OS time remains 11.11 and date is Tue 17 Nov. The approved Lock styling/geometry remain unchanged. Notes v2 adds nullable historical timestamps, a stable edit sequence, and validated read-only v1 migration; never fabricate historical dates. Opening or committing unchanged text is strictly write-free. Title/body native controls serialize losslessly to plain text; virtual input follows the active field. Do not start Phase 6.
+
+Phase 5.3 supersedes all earlier Notes storage/migration instructions: edits are temporary within the current page; closing/reopening Notes retains committed session changes, while full reload restores original dated story samples. Never read, update, delete, or migrate old Notes localStorage keys. Keep OS navigation/clock/PIN independent of this session state. Use one Notes canvas token across full-glass app/status/nav/editor regions, clean white action strokes without filters, and retain native input fallback and two-field text editing.

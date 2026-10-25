@@ -9,7 +9,7 @@ type OsState = {
   enterDigit: (digit: string) => void;
   deleteDigit: () => void;
   lock: () => void;
-  openApp: (id: string) => void;
+  openApp: (id: unknown) => void;
   goHome: () => void;
 };
 
@@ -36,7 +36,7 @@ export function createOsStore(appIds: readonly string[], pin = DEFAULT_SIMULATIO
     },
     lock: () => { if (get().view.kind !== "lock") set({ view: { kind: "lock" } }); },
     openApp: (id) => {
-      if (get().view.kind === "home" && allowedApps.has(id)) set({ view: { kind: "app", appId: id } });
+      if (get().view.kind === "home" && typeof id === "string" && allowedApps.has(id)) set({ view: { kind: "app", appId: id } });
     },
     goHome: () => { if (get().view.kind === "app") set({ view: { kind: "home" } }); },
   }));

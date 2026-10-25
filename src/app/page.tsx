@@ -7,7 +7,7 @@ import { WibClockProvider } from "../features/os/wib-clock-provider";
 export default function Page() {
   return (
     <main className="device-stage">
-      <WibClockProvider>
+      <WibClockProvider clock={experienceConfig.storyClock}>
         <PhoneShell contentPresentation="full" wallpaper={experienceConfig.homeWallpaper.fallback} overlay={<DeviceChrome />}>
           <OsExperience config={experienceConfig} />
         </PhoneShell>
