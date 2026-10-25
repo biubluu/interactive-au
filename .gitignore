@@ -6,7 +6,7 @@ playwright-report/
 test-results/
 artifacts/
 docs/
-test/
+tests/
 *.tsbuildinfo
 .env*
 !.env.example
