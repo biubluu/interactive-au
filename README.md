@@ -48,9 +48,9 @@ The viewport matrix runs once in the desktop project; eight duplicate matrix cas
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` runs lint, type checking, unit tests, production build, and static artifact verification on pushes and pull requests using Node 24 and `npm ci`. E2E is configured for local execution and is not part of this initial CI job.
+`.github/workflows/ci.yml` runs lint, type checking, production build, and static artifact verification on pushes and pull requests using Node 24 and `npm ci`. E2E is configured for local execution and is not part of this initial CI job.
 
-The workflow assumes this `interactive-au/` directory is the Git repository root. A local repository is initialized for the foundation commit, including the lockfile. No remote is configured and nothing is published. If retaining it as a subdirectory in another repository, move the workflow to that repository's root `.github/workflows/` and adjust its working directory and lockfile path.
+The workflow assumes this `interactive-au/` directory is the Git repository root. A local repository is initialized for the foundation commit, including the lockfile. This cleanup does not commit or publish changes. If retaining it as a subdirectory in another repository, move the workflow to that repository's root `.github/workflows/` and adjust its working directory and lockfile path.
 
 ## Scope
 
@@ -87,3 +87,9 @@ The author-corrected reference stays `2026-11-17T11:11:00+07:00`, Asia/Jakarta. 
 Two native fields provide 22.5px/15px-equivalent title/body typography and serialize to plain text. Enter from title moves into body; empty-body Backspace returns to title. The reusable simulated keyboard supports caret/selection edits, numbers/symbols, Shift/caps, grapheme deletion, and physical keyboard input. Its globe and toolbar native-entry controls keep the textarea editable with `inputMode="text"`; native keyboard suppression remains browser-dependent. Selection across both fields remains unsupported.
 
 Current screenshots are generated in `artifacts/phase-5.3/`: fresh/legacy lists, editor top, icon close-ups, keyboard, narrow/landscape, and desktop layouts. The scope adds no dependencies, backend, external integrations, new apps, or Story Runtime. Search/formatting/sharing remain disabled. Physical-device keyboards and Safari/Firefox remain unverified.
+
+## Local-only development files
+
+`/AGENTS.md`, `/docs/`, `/tests/`, and `/artifacts/` are ignored and excluded from the tracked repository. Existing local copies remain available for Codex, documentation, Vitest, and Playwright. Normal `git add .` does not stage them; an explicit `git add -f` can override ignore rules.
+
+Fresh clones do not include these files. The test commands and dependencies remain in package.json for machines retaining the local tests; npm test and npm run test:e2e need that private tests folder. CI intentionally runs only lint, strict type checks, production build, and static-export artifact verification. It does not run tests that are not available in the clone. Back up these local-only files separately because future commits no longer back up their changes. Removing paths from the current tree does not remove copies from earlier Git history.

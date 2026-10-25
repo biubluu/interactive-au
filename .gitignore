@@ -4,9 +4,10 @@ out/
 coverage/
 playwright-report/
 test-results/
-artifacts/
-docs/
-tests/
+/artifacts/
+/docs/
+/tests/
+/AGENTS.md
 *.tsbuildinfo
 .env*
 !.env.example
