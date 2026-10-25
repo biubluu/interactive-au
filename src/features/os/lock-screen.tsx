@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { animate, motion, useDragControls, useIsPresent, useMotionValue, useTransform } from "motion/react";
+import { UiIcon } from "../../components/ui-icon";
 import { OsIcon } from "./os-icons";
 import { isUnlockSwipe, osSpring, unlockDistance } from "./os-motion";
 import { useOsReducedMotion } from "./use-os-reduced-motion";
@@ -75,14 +76,14 @@ export function LockScreen({ onUnlock, clockColor = "#ffffff", dateColor = "#fff
       </header>
       <div className="os-lock-bottom">
         <div className="os-shortcuts">
-          <motion.button whileTap={reduced ? { opacity: 0.7 } : { scale: 0.92 }} className="os-shortcut"
+          <motion.button whileTap={reduced ? { opacity: 0.7 } : { scale: 0.92 }} className="os-shortcut glass-control glass-circle glass-photo"
             aria-label="Flashlight shortcut (visual only)" aria-pressed={flashlight}
             onClick={() => setFlashlight(!flashlight)}>
             <OsIcon name="flashlight" />
           </motion.button>
-          <motion.button whileTap={reduced ? { opacity: 0.7 } : { scale: 0.92 }} className="os-shortcut"
+          <motion.button whileTap={reduced ? { opacity: 0.7 } : { scale: 0.92 }} className="os-shortcut glass-control glass-circle glass-photo"
             aria-label="Camera shortcut (visual only)" aria-pressed={camera} onClick={() => setCamera(!camera)}>
-            <OsIcon name="camera" />
+            <UiIcon name="camera" />
           </motion.button>
         </div>
         <button className="os-swipe-zone os-unlock" data-testid="unlock-gesture" aria-label="Enter passcode"

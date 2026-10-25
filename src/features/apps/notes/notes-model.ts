@@ -3,8 +3,8 @@ import { storyTimeline as notesTimeline } from "../../../experience-timeline";
 
 /** Original PLACEHOLDER records with authored fictional dates, never reader history. */
 export const sampleNotes: readonly Note[] = [
-  { id: "sample-window", text: "An open window\nLeave a little room for the afternoon light.", createdAt: "2026-11-16T09:00:00+07:00", updatedAt: "2026-11-16T09:00:00+07:00", editOrder: 0 },
-  { id: "sample-saturday", text: "Saturday list\nFind a quiet table. Bring a blank notebook.", createdAt: "2026-11-14T10:00:00+07:00", updatedAt: "2026-11-14T10:00:00+07:00", editOrder: 0 },
+  { id: "sample-window", text: "Aku kangen bek\nKapan terakhir kali bek ke Depok dan ada aku di dalamnya. Kapan terakhir kali aku ke Cimahi dan kita bakar lemak, lemakku sih, bek mah kecil sekali. Kita sama-sama sibuk, tapi bek keren.", createdAt: "2026-11-16T09:00:00+07:00", updatedAt: "2026-11-16T09:00:00+07:00", editOrder: 0 },
+  { id: "sample-saturday", text: "List agar tetap hidup\n- Menonton kairawrdino episode membangun hotel bukan Indonesia.\n- Menonton kairawrdino episode menjadi racer demi kemakmuran gaji WNI.", createdAt: "2026-11-14T10:00:00+07:00", updatedAt: "2026-11-14T10:00:00+07:00", editOrder: 0 },
   { id: "sample-colors", text: "Colors to remember\nWarm amber, pale blue, and the green after rain.", createdAt: "2026-10-24T08:00:00+07:00", updatedAt: "2026-10-24T08:00:00+07:00", editOrder: 0 },
 ];
 export function splitNote(text: string) {

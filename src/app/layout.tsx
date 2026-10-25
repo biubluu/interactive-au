@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
+import "../components/glass-controls.css";
 
 export const metadata: Metadata = {
   title: "Interactive AU | Fictional Phone Experience",

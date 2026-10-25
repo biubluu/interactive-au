@@ -5,7 +5,6 @@ import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { useStore } from "zustand";
 import type { ExperienceConfig, PlaceholderApp } from "./experience-config";
 import { createOsStore } from "./os-store";
-import { OsIcon } from "./os-icons";
 import { LockScreen } from "./lock-screen";
 import { OsScene } from "./os-scene";
 import { osSpring } from "./os-motion";
@@ -75,14 +74,7 @@ export function OsExperience({ config }: Readonly<{ config: ExperienceConfig }>)
             {view.kind === "passcode" && <PasscodeScreen digits={view.digits} error={view.error}
               onDigit={store.getState().enterDigit} onDelete={store.getState().deleteDigit} onCancel={store.getState().lock} />}
             {view.kind === "home" && <>
-              <header className="os-home-header">
-                <h1 tabIndex={-1} className="os-scene-heading sr-only">Home Screen</h1>
-                <button className="os-lock-control" aria-label="Lock device" onClick={() => {
-                  if (store.getState().view.kind !== "home") return;
-                  setLaunch(null);
-                  store.getState().lock();
-                }}><OsIcon name="lock" /></button>
-              </header>
+              <h1 tabIndex={-1} className="os-scene-heading sr-only">Home Screen</h1>
               <div className="os-app-grid" aria-label="Applications">{[...config.apps.filter((app) => app.placement === "grid"), ...registeredEntries].map((app) => renderApp(app))}</div>
               <div className="os-dock-area">
                 <nav className="os-dock" aria-label="Dock">{config.apps.filter((app) => app.placement === "dock").map((app) => renderApp(app, true))}</nav>

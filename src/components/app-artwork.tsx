@@ -1,16 +1,30 @@
-import { useId, type ReactNode } from "react";
-export type IconName = "message" | "phone" | "camera" | "photo" | "note" | "calendar" | "map" | "music" | "mail" | "compass" | "settings" | "folder";
+"use client";
+
+import { useId, useState, type ReactNode } from "react";
+import Image from "next/image";
+import { appIconAssets } from "./app-icon-assets";
+export type IconName = "instagram" | "x" | "message" | "phone" | "camera" | "photo" | "note" | "calendar" | "map" | "music" | "mail" | "compass" | "settings" | "folder";
+
+export function AppArtwork({ name }: Readonly<{ name: IconName }>) {
+  const [failedSource, setFailedSource] = useState<string>();
+  const source = appIconAssets[name];
+  return source && failedSource !== source
+    ? <Image className="os-app-artwork" src={source} alt="" aria-hidden="true" width={128} height={128} unoptimized onError={() => setFailedSource(source)} />
+    : <OriginalAppArtwork name={name} />;
+}
 
 /** Original local SVG artwork. No Apple assets, fonts, or external resources. */
-export function AppArtwork({ name }: Readonly<{ name: IconName }>) {
+function OriginalAppArtwork({ name }: Readonly<{ name: IconName }>) {
   const id = useId();
   const lens = `lens-${id}`;
   const shine = `shine-${id}`;
   const art: Record<IconName, ReactNode> = {
+    instagram: <><rect width="64" height="64" fill="#bd338b" /><rect x="14" y="14" width="36" height="36" rx="11" fill="none" stroke="white" strokeWidth="4" /><circle cx="32" cy="32" r="9" fill="none" stroke="white" strokeWidth="3" /><circle cx="44" cy="20" r="2.5" fill="white" /></>,
+    x: <><rect width="64" height="64" fill="#08090b" /><text x="32" y="49" textAnchor="middle" fontSize="46" fill="white">X</text></>,
     calendar: <>
       <rect width="64" height="64" fill="#fffaf5" /><path d="M0 0h64v17H0z" fill="#ef524f" />
-      <text x="32" y="13" textAnchor="middle" fill="white" fontSize="8" fontWeight="650">SUNDAY</text>
-      <text x="32" y="52" textAnchor="middle" fill="#22252d" fontSize="34" fontWeight="350">25</text>
+      <text x="32" y="13" textAnchor="middle" fill="white" fontSize="8" fontWeight="650">TUESDAY</text>
+      <text x="32" y="52" textAnchor="middle" fill="#22252d" fontSize="34" fontWeight="350">17</text>
     </>,
     photo: <>
       <rect width="64" height="64" fill="#fbfafb" />

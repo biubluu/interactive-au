@@ -131,11 +131,14 @@ export function NotesApp({ onHome }: VirtualAppProps) {
     onPointerDownCapture={() => setFocusMode("pointer")}
     onKeyDownCapture={(event) => { if (event.key === "Tab" || (event.target instanceof HTMLButtonElement && ["Enter", " "].includes(event.key))) setFocusMode("keyboard"); }}>
     <nav className="notes-navigation" aria-label="Notes navigation">
-      <button className="notes-circle" aria-label={view.kind === "list" ? "Close Notes" : "Back to Notes"} onClick={view.kind === "list" ? onHome : finish}><NotesIcon name="back" /></button>
+      <button className="notes-circle glass-control glass-circle" aria-label={view.kind === "list" ? "Close Notes" : "Back to Notes"} onClick={view.kind === "list" ? onHome : finish}><NotesIcon name="back" /></button>
       <div className="notes-navigation-right">
-        {view.kind === "editor" && <button className="notes-circle" disabled aria-label="Share note (unavailable)"><NotesIcon name="share" /></button>}
-        <button className="notes-circle" disabled aria-label="More options (unavailable)"><NotesIcon name="more" /></button>
-        {view.kind === "editor" && <button ref={done} className="notes-circle notes-done" aria-label="Done" onClick={finish}><NotesIcon name="check" /></button>}
+        {view.kind === "editor" && <button className="notes-circle glass-control glass-circle" disabled aria-label="Share note (unavailable)"><NotesIcon name="share" /></button>}
+        {view.kind === "list" ? <button className="notes-circle glass-control glass-circle" disabled aria-label="More options (unavailable)"><NotesIcon name="more" /></button> : <details className="notes-entry-options"><summary className="notes-circle glass-control glass-circle" aria-label="Text entry options"><NotesIcon name="more" /></summary><div className="notes-entry-menu">
+          <button onClick={(event) => { event.currentTarget.closest("details")?.removeAttribute("open"); setNativeEntry(true); setKeyboard(false); }}>Use native text entry</button>
+          <button onClick={(event) => { event.currentTarget.closest("details")?.removeAttribute("open"); setNativeEntry(false); setKeyboard(true); (activeField.current === "title" ? titleField.current : bodyField.current)?.focus({ preventScroll: true }); }}>Use simulated text entry</button>
+        </div></details>}
+        {view.kind === "editor" && <button ref={done} className="notes-circle notes-done glass-control glass-circle glass-accent" aria-label="Done" onClick={finish}><NotesIcon name="check" /></button>}
       </div>
     </nav>
     {view.kind === "list" ? <>
@@ -158,8 +161,8 @@ export function NotesApp({ onHome }: VirtualAppProps) {
           </section>;
         })}
       </div>
-      <div className="notes-list-bottom"><button className="notes-search" disabled aria-label="Search notes (unavailable)"><NotesIcon name="search" />Search</button>
-        <button className="notes-circle notes-compose" ref={compose} aria-label="Create note" disabled={notes.length >= 1000} onClick={() => open(newNoteId(), "")}><NotesIcon name="compose" /></button>
+      <div className="notes-list-bottom"><button className="notes-search glass-control glass-pill" disabled aria-label="Search notes (unavailable)"><NotesIcon name="search" />Search</button>
+        <button className="notes-circle notes-compose glass-control glass-circle" ref={compose} aria-label="Create note" disabled={notes.length >= 1000} onClick={() => open(newNoteId(), "")}><NotesIcon name="compose" /></button>
       </div>
     </> : <>
       <h1 className="sr-only os-scene-heading" tabIndex={-1}>Note editor</h1>
@@ -175,16 +178,17 @@ export function NotesApp({ onHome }: VirtualAppProps) {
           onKeyDown={(event) => physicalKey(event, field)}
           onChange={(event) => updateField(field, event.target.value)} />)}
       </div>
-      <div className="notes-formatting" role="group" aria-label="Formatting tools">
+      <div className="notes-formatting" role="group" aria-label="Formatting tools (unavailable); scroll for more" tabIndex={0}
+        onKeyDown={(event) => { if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) { event.preventDefault(); const el = event.currentTarget; el.scrollLeft = event.key === "Home" ? 0 : event.key === "End" ? el.scrollWidth : el.scrollLeft + (event.key === "ArrowRight" ? 100 : -100); } }}>
         <button disabled aria-label="Text formatting (unavailable)">Aa</button>
-        {([ ["list", "Checklist"], ["table", "Table"], ["clip", "Attachment"], ["markup", "Markup"] ] as const).map(([icon, name]) => <button disabled key={icon} aria-label={`${name} (unavailable)`}><NotesIcon name={icon} /></button>)}
-        <button aria-label={keyboard ? "Dismiss simulated keyboard" : "Show simulated keyboard"} onClick={() => {
-          if (keyboard) hideKeyboard();
-          else { setNativeEntry(false); setKeyboard(true); (activeField.current === "title" ? titleField.current : bodyField.current)?.focus({ preventScroll: true }); }
-        }}><NotesIcon name="keyboard" /></button>
-        <button className="notes-native" aria-label="Use native text entry" onClick={() => {
-          setNativeEntry(true); setKeyboard(false); (activeField.current === "title" ? titleField.current : bodyField.current)?.focus({ preventScroll: true });
-        }}><NotesIcon name="native" /></button>
+        {([["checklist", "Checklist"], ["table", "Table"], ["clip", "Attachment"], ["markup", "Markup"]] as const).map(([icon, name]) => <button disabled key={icon} aria-label={`${name} (unavailable)`}><NotesIcon name={icon} /></button>)}
+        <button disabled aria-label="Bold (unavailable)"><b>B</b></button>
+        <button disabled aria-label="Italic (unavailable)"><i>I</i></button>
+        <button disabled aria-label="Underline (unavailable)"><u>U</u></button>
+        <button disabled aria-label="Strikethrough (unavailable)"><s>S</s></button>
+        <button className="notes-highlight" disabled aria-label="Highlight (unavailable)"><NotesIcon name="highlight" /></button>
+        <button disabled aria-label="Insert link (unavailable)"><NotesIcon name="link" /></button>
+        <button disabled aria-label="Text alignment (unavailable)"><NotesIcon name="alignment" /></button>
       </div>
       {keyboard && !nativeEntry && isPresent && <VirtualKeyboard onEdit={insert} onDismiss={hideKeyboard} onNativeEntry={() => { setNativeEntry(true); setKeyboard(false); }} />}
     </>}

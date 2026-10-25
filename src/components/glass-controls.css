@@ -1,0 +1,53 @@
+/* Presentation only. Geometry and actions belong to the composing screen. */
+.glass-control {
+  --glass-fallback: #e8e9edeb;
+  --glass-tint: #e2e4e84d;
+  --glass-light: #ffffff38;
+  --glass-border: #ffffffb3;
+  --glass-highlight: #ffffffb3;
+  --glass-lowlight: #ffffff26;
+  --glass-shadow: #1b203314;
+  --glass-ink: #666a75;
+  --glass-focus: #795600;
+  --glass-blur: 12px;
+  color: var(--glass-ink);
+  background: var(--glass-fallback);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 1px var(--glass-highlight), inset 0 -1px 1px var(--glass-lowlight), 0 3px 12px var(--glass-shadow);
+}
+.glass-circle { border-radius: 50%; }
+.glass-pill { border-radius: 999px; }
+.glass-photo {
+  --glass-fallback: #2023349c;
+  --glass-tint: #15182766;
+  --glass-light: #ffffff29;
+  --glass-border: #ffffff4d;
+  --glass-highlight: #ffffff59;
+  --glass-lowlight: #ffffff0d;
+  --glass-shadow: #0003;
+  --glass-ink: #fffffff2;
+  --glass-focus: #fff;
+}
+.glass-accent {
+  --glass-fallback: #dda91deb;
+  --glass-tint: #e7ad15b8;
+  --glass-light: #ffffff52;
+  --glass-border: #fff2b5cc;
+  --glass-highlight: #ffffffa6;
+  --glass-ink: #fff;
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-control {
+    background: linear-gradient(150deg, var(--glass-light), #ffffff08), var(--glass-tint);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.25);
+    backdrop-filter: blur(var(--glass-blur)) saturate(1.25);
+  }
+}
+/* Photo controls keep their approved Motion feedback and pressed toggle. */
+.glass-control:not(.glass-photo):is(:hover, :active):not(:disabled) { border-color: #fff; }
+.glass-control:not(.glass-photo):active:not(:disabled) { box-shadow: inset 0 1px 3px #1b20331a, 0 1px 5px var(--glass-shadow); }
+.glass-control:focus-visible { outline: 2px solid var(--glass-focus); outline-offset: 3px; }
+.glass-control:disabled { cursor: default; }
+@media (prefers-reduced-motion: no-preference) {
+  .glass-control:not(.glass-photo) { transition: border-color .12s, box-shadow .12s; }
+}

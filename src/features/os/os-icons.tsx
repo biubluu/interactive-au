@@ -2,6 +2,8 @@ import type { IconName } from "./experience-config";
 type SymbolName = IconName | "lock" | "flashlight" | "arrow";
 
 const paths: Record<SymbolName, string> = {
+  instagram: "M8 4h16a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4zM22 16a6 6 0 1 1-12 0 6 6 0 0 1 12 0",
+  x: "M6 5 26 27M26 5 6 27",
   message: "M5 5h22v16H14l-7 5v-5H5z M10 11h12 M10 16h8",
   phone: "M10 4 5 7c-2 9 11 22 20 20l3-5-7-4-3 3c-4-2-5-3-7-7l3-3z",
   camera: "M4 10h7l2-4h7l2 4h6v16H4z M22 18a6 6 0 1 1-12 0 6 6 0 0 1 12 0",
@@ -19,5 +21,6 @@ const paths: Record<SymbolName, string> = {
   arrow: "m9 18 7-7 7 7",
 };
 export function OsIcon({ name }: Readonly<{ name: SymbolName }>) {
+  if (name === "flashlight") return <svg viewBox="0 0 32 32" fill="currentColor" stroke="none" aria-hidden="true" focusable="false"><path fillRule="evenodd" d="M10 3h12a1 1 0 0 1 1 1v5H9V4a1 1 0 0 1 1-1Zm-1 8h14l-4 6v10a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V17Zm6 8v5a1 1 0 0 0 2 0v-5a1 1 0 0 0-2 0Z" /></svg>;
   return <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d={paths[name]} /></svg>;
 }
