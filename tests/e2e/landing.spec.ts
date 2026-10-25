@@ -7,7 +7,7 @@ test("keyboard unlock passes through PIN entry, preserves focus, and resets on r
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveAccessibleName(/Lock Screen, .* WIB/);
-  await expect(page.getByTestId("lock-clock")).toHaveText(/\d{2}:\d{2}/);
+  await expect(page.getByTestId("lock-clock")).toHaveText(/\d{2}\.\d{2}/);
   await expect(page.getByText("PLACEHOLDER", { exact: false })).toHaveCount(0);
   await page.keyboard.press("Tab");
   await expect(page.getByRole("button", { name: "Flashlight shortcut (visual only)", exact: true })).toBeFocused();

@@ -1,6 +1,6 @@
 # Device Shell and OS Design System
 
-Status: Phase 4.2 Lock Screen refinement. Physical geometry is retained from Phase 2; passcode, scheduler, Home layout, and fullscreen apps retain Phase 4.1 behavior. This is a fictional browser-rendered device, not real iOS or native hardware.
+Status: Phase 4.3 clock presentation, frosted glass, and Lock Screen spacing refinement. Physical geometry is retained from Phase 2; passcode, scheduler, Home layout, and fullscreen apps retain Phase 4.1 behavior. This is a fictional browser-rendered device, not real iOS or native hardware.
 
 ## Device geometry
 
@@ -77,11 +77,11 @@ The stage follows light/dark color preference, while the simulated glass has a c
 
 ## Lock Screen and shortcuts
 
-The Lock clock uses system weight 850 (within the 800–900 target), centered tabular numerals, restrained negative tracking, and container-aware sizing. A container-width cap keeps all HH:mm combinations on one line on small/enlarged-text screens. No proprietary font file is bundled. The date is abbreviated as **Sun 25 Oct** using the same WIB clock source. The small lock symbol is removed and date/clock spacing is reduced.
+The Lock clock uses system weight 850 (within the 800–900 target), centered tabular numerals, restrained negative tracking, and container-aware sizing. A container-width cap keeps all HH.mm combinations on one line on small/enlarged-text screens. No proprietary font file is bundled. The date is abbreviated as **Sun 25 Oct** using the same WIB clock source. The small lock symbol is removed and date/clock spacing is reduced.
 
-Clock and date colors are independent configuration values, both white by default. A restrained two-layer text shadow supports contrast on bright areas; the former full-screen Lock scrim is removed so the photograph remains visible. Review contrast for each chosen image/crop and select darker configured text when needed. No separate reference screenshot was attached for this phase, so proportions follow the written brief.
+Clock and date colors are independent configuration values, both white by default. Translucent silver text gradients and controlled highlights/shadows support contrast on bright areas; the former full-screen Lock scrim is removed so the photograph remains visible. Review contrast for each chosen image/crop and select darker configured text when needed. No separate reference screenshot was attached for this phase, so proportions follow the written brief.
 
-Flashlight and camera-style circles remain 52px, symmetrically positioned at the lower corners. Idle surfaces have a semi-transparent tint, fine translucent border, internal highlights, and a soft contact shadow. Blur (12px) and saturation (1.25) are enabled only inside a backdrop-filter support query, including the WebKit property. Without support, a readable tinted circular surface remains. Blur is static, not animated; press feedback and visual-only toggles retain existing behavior.
+Flashlight and camera-style circles remain 52px, symmetrically positioned slightly inward from the lower corners. `--lock-shortcut-inset: clamp(16px, 6cqw, 24px)` controls equal side spacing and `--lock-shortcut-size: 52px` controls their diameter, with a 44px minimum target. Idle surfaces have a semi-transparent tint, fine translucent border, internal highlights, and a soft contact shadow. Blur (12px) and saturation (1.25) are enabled only inside a backdrop-filter support query, including the WebKit property. Without support, a readable tinted circular surface remains. Blur is static, not animated; press feedback and visual-only toggles retain existing behavior.
 
 The lower semantic swipe button is visually empty: no arrow, instruction, or redundant Unlock label. It retains a minimum 56px height, accessible name **Enter passcode**, and a visible keyboard focus outline. It is the same pointer/touch drag region and click/Enter/Space alternative, not a separate visible control.
 
@@ -101,7 +101,7 @@ Focus moves to the passcode heading on entry, to the accessible Home heading aft
 
 ## Shared live WIB clock
 
-`WibClockProvider` supplies the same clock value to Lock Screen and status chrome. Server rendering and hydration use the deterministic `--:--` / WIB fallback and do not read the device time or browser APIs.
+`WibClockProvider` supplies the same clock value to Lock Screen and status chrome. Server rendering and hydration use the deterministic model `--:--` / WIB fallback (displayed as `--.--`) and do not read the device time or browser APIs.
 
 After mount, the provider starts one scheduler. `Intl.DateTimeFormat` explicitly uses `timeZone: "Asia/Jakarta"`; HH:mm uses 24-hour `h23` formatting, including 00:00 at midnight. A fixed English formatter supplies short weekday, numeric day, and short month, assembled as `Sun 25 Oct` without punctuation. The date uses the same WIB day. Only date presentation changed in Phase 4.2; the scheduler is untouched.
 
@@ -136,8 +136,18 @@ Tests cover PIN correctness/error/deletion/cancel/relock, physical keyboard supp
 
 Zoom tests use an effective 683x384 CSS viewport plus 200% root text sizing. This is a reflow/enlarged-text approximation, not manual browser-menu zoom. Touch uses Chromium CDP input, not a physical device. Safari, native browser chrome behavior, and real-device animation feel remain manual-review limitations.
 
-Current screenshots are ignored local artifacts at `artifacts/phase-4.2/`. Tests freeze device time to 09:41 WIB for stable visual review while production uses live time. Each viewport generates `lock-<width>x<height>.png`, `passcode-<width>x<height>.png`, `home-<width>x<height>.png`, and `app-<width>x<height>.png`. Explicit photo screenshots at 393x852, 430x932, and 1366x768 include the project name in `lock-photo-<width>x<height>-<project>.png`. Dark variants and enlarged-text Home screenshots are also generated. Earlier phase screenshots remain historical artifacts.
+Current screenshots are ignored local artifacts at `artifacts/phase-4.3/`. Tests freeze device time to 09:41 WIB for stable visual review while production uses live time. Each viewport generates `lock-<width>x<height>.png`, `passcode-<width>x<height>.png`, `home-<width>x<height>.png`, and `app-<width>x<height>.png`. Explicit photo screenshots at 393x852, 430x932, and 1366x768 include the project name in `lock-photo-<width>x<height>-<project>.png`. Dark variants and enlarged-text Home screenshots are also generated. Earlier phase screenshots remain historical artifacts.
 
 Phase 4.2 adds tests for local image bounds and cover cropping, missing-image fallback without layout shift, independent Home choice, no visible unlock instruction, shortcut symmetry/keyboard access, and all 24 hours on 320px width before and after 200% text sizing. The existing swipe, passcode, reduced-motion, accessibility, and fullscreen tests remain in use.
 
 Phase 5 is not included.
+
+## Phase 4.3 presentation contract
+
+`clock-presentation.ts` formats canonical `HH:mm` values as **HH.mm** for both the Lock Screen and status bar. Computation, ISO `dateTime` attributes, and conventional spoken `HH:mm WIB` labels remain unchanged. The shared provider and scheduler are untouched. Production dates are live English WIB dates, never screenshot constants; minute boundaries and tab visibility refresh update time and date together, including month-end, leap-year, and year-end rollover outside Indonesia.
+
+The heavy clock uses a translucent white/silver gradient clipped to text where text clipping and color mixing are supported. Configured text color and text shadows provide the fallback. The clock container stays fully opaque; no animated filters or layout changes are introduced. Date typography sits on a small rounded translucent surface with 3px/10px padding, a fine border, and subtle inner highlight, rather than a large card.
+
+Numeric keypad buttons and Lock shortcuts share tinted circular surfaces, translucent borders, inner highlights, and restrained shadows. Supported browsers add static 12px backdrop blur with 1.25 saturation; the date uses 8px blur and 1.15 saturation. Unsupported browsers retain tinted surfaces and readable solid text. Keypad dimensions, labels, press feedback, PIN, and keyboard behavior are unchanged.
+
+Focused browser tests cover dotted formatting, synchronized live time/date at calendar boundaries and visibility restoration, shortcut symmetry across compact/framed/landscape layouts, and keypad keyboard access. Axe checks the rendered glass and forced fallback presentations. Fallback tests explicitly disable filter/text effects in Chromium; they do not simulate an older browser CSS parser. Existing gesture, reduced-motion, clipping, focus, and narrow all-hour tests remain active. Screenshot time is frozen only by tests.

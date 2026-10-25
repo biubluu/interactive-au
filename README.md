@@ -1,6 +1,6 @@
 # Interactive AU
 
-Phase 4.2 refines the Lock Screen with a local photo wallpaper, heavy system clock, abbreviated WIB date, glass-style shortcuts, and an invisible accessible swipe region. The existing passcode flow, live clock, Home layout, and fullscreen demos remain intact. Real virtual apps, story runtime, persistence, and Phase 5 are not implemented.
+Phase 4.3 refines the Lock Screen with HH.mm clock presentation, live abbreviated WIB dates, coordinated glass clock/date/keypad surfaces, and symmetric inward shortcuts. Local photo wallpaper and the invisible accessible swipe region remain intact. The existing passcode flow, live clock, Home layout, and fullscreen demos remain intact. Real virtual apps, story runtime, persistence, and Phase 5 are not implemented.
 
 Read [AGENTS.md](AGENTS.md) and [docs/architecture.md](docs/architecture.md) before making changes. Project documentation is in English; reports to the user are in Indonesian.
 
@@ -44,7 +44,7 @@ npm run test:e2e
 
 Playwright starts and stops the static preview server automatically on port 4173, keeping the default development server on port 3000 separate. Port 4173 must be free. Tests run against desktop and mobile Chromium, exercising passcode correctness/error/deletion/cancel/relock, physical keyboard input, fullscreen app layout, WIB midnight/visibility updates, hydration diagnostics, focus restoration, shortcuts, viewport fit, reduced motion, physical clipping, and axe checks. Browser downloads require network access. Additional browser engines are outside this phase.
 
-The viewport matrix runs once in the desktop project; eight duplicate matrix cases are intentionally skipped in the mobile project. The CDP touch test runs only in mobile Chromium, so one desktop copy is also intentionally skipped. Current screenshots are generated in `artifacts/phase-4.2/` (ignored by Git), including explicit Lock photo review at 393x852, 430x932, and 1366x768. Tests fix time at 09:41 WIB only for screenshots; production uses live device time. Gesture, rapid navigation, reduced motion, cropping/fallback, and all-hour narrow clock regressions are covered. See [docs/design-system.md](docs/design-system.md) for details and review limitations.
+The viewport matrix runs once in the desktop project; eight duplicate matrix cases are intentionally skipped in the mobile project. The CDP touch test runs only in mobile Chromium, so one desktop copy is also intentionally skipped. Current screenshots are generated in `artifacts/phase-4.3/` (ignored by Git), including explicit Lock photo review at 393x852, 430x932, and 1366x768. Tests fix time at 09:41 WIB only for screenshots; production uses live device time. Gesture, rapid navigation, reduced motion, cropping/fallback, and all-hour narrow clock regressions are covered. See [docs/design-system.md](docs/design-system.md) for details and review limitations.
 
 ## Continuous integration
 
@@ -66,6 +66,6 @@ Demo icon metadata/order remains configurable with grid/dock placement and typed
 
 The PIN is **0411**, including the leading zero, per the user's update. Presentation configuration now references the store's `DEFAULT_SIMULATION_PIN` constant. It is public storytelling simulation data, **not authentication or a security boundary**. Entered digits are masked and transient; success, cancel, and relock discard them. Keypad behavior is unchanged.
 
-Clock time comes from the browser device clock, formatted in `Asia/Jakarta` with 24-hour HH:mm. SSR/hydration use a stable fallback, then one shared provider starts minute-boundary updates and refreshes on visibility. No external time API is used. Incorrect device clocks remain possible.
+Clock time comes from the browser device clock, computed in `Asia/Jakarta` with canonical 24-hour HH:mm and displayed consistently as HH.mm. The same provider supplies the actual abbreviated English WIB date, including midnight and calendar rollovers. ISO attributes and spoken time labels retain their conventional formats. SSR/hydration use a stable fallback, then one shared provider starts minute-boundary updates and refreshes on visibility. No external time API is used. Incorrect device clocks remain possible.
 
 Swipe is optional and restricted to the visually empty lower region, which is also the focusable keyboard/click action named Enter passcode. There is no visible arrow or unlock instruction. Scrolling elsewhere remains native. Reduced motion and motion constants are unchanged. The Next.js development indicator remains disabled; diagnostics remain enabled. Phase 5 requires a separate request.

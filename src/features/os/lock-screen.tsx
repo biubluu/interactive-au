@@ -6,6 +6,7 @@ import { OsIcon } from "./os-icons";
 import { isUnlockSwipe, osSpring, unlockDistance } from "./os-motion";
 import { useOsReducedMotion } from "./use-os-reduced-motion";
 import { useWibClock } from "./wib-clock-provider";
+import { displayWibTime } from "./clock-presentation";
 
 export function LockScreen({ onUnlock, clockColor = "#ffffff", dateColor = "#ffffff" }: Readonly<{
   onUnlock: () => void; clockColor?: string; dateColor?: string;
@@ -70,7 +71,7 @@ export function LockScreen({ onUnlock, clockColor = "#ffffff", dateColor = "#fff
       }}>
       <header className="os-lock-clock">
           <p className="os-date"><time dateTime={clock.dateKey || undefined}>{clock.date}</time></p>
-          <h1 className="os-clock" aria-label={`Lock Screen, ${clock.time} WIB`}><time data-testid="lock-clock" dateTime={clock.dateTime}>{clock.time}</time></h1>
+          <h1 className="os-clock" aria-label={`Lock Screen, ${clock.time} WIB`}><time data-testid="lock-clock" dateTime={clock.dateTime}>{displayWibTime(clock.time)}</time></h1>
       </header>
       <div className="os-lock-bottom">
         <div className="os-shortcuts">

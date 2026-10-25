@@ -1,6 +1,6 @@
 # Interactive AU Architecture
 
-Status: Phase 4.2 Lock Screen visual refinement and independent wallpaper choices, with the user-requested PIN changed to 0411. The five boundaries remain authoritative. Phase 5, real virtual app functionality, story runtime, and persistence remain unimplemented. The latest phase decisions supersede older presentation/default-value details retained below as history.
+Status: Phase 4.3 clock/glass presentation and Lock Screen spacing refinement, retaining independent wallpapers and PIN 0411. The five boundaries remain authoritative. Phase 5, real virtual app functionality, story runtime, and persistence remain unimplemented. The latest phase decisions supersede older presentation/default-value details retained below as history.
 
 ## Product goals and boundaries
 
@@ -167,6 +167,13 @@ Tests follow implemented behavior. Do not create tests for speculative UI or fea
 - The Lock Screen heavy scrim is removed; restrained text shadows support contrast without obscuring the photo. The date formatter alone changes to short weekday/day/month; the shared WIB scheduler and hydration fallback remain intact. Screenshot comparison follows the written brief because no separate reference screenshot was attached.
 - Per user instruction, `DEFAULT_SIMULATION_PIN` is now `0411`. The presentation config references that constant rather than overriding it with an outdated literal. PIN tests and current developer documentation follow the configured value, preserving its leading zero. This remains public story simulation, not authentication.
 - Tests retain existing gesture, passcode, clock, focus, reduced-motion, and clipping coverage and add local-image bounds/cropping, CSS fallback on image failure, absence of visible instructions, shortcut symmetry, keyboard activation, and all 24 hour combinations on a narrow screen with enlarged text. Screenshots are generated under `artifacts/phase-4.2/`.
+
+## Phase 4.3 decisions
+
+- A small pure presentation formatter converts canonical `HH:mm` into displayed `HH.mm` for Lock Screen and status chrome. Clock computation, ISO attributes, spoken time labels, shared provider, minute scheduler, timezone, and visibility lifecycle are unchanged.
+- The existing live WIB date remains sourced from the same provider, with hydration-safe initial fallback. Tests now explicitly cover month-end/year-end/leap-year transitions and stale-date recovery on visibility outside Indonesia. Frozen dates exist only in automated tests.
+- Clock/date glass styling, shared shortcut/keypad surfaces, and symmetric inward shortcut tokens are CSS-only refinements. Feature queries retain solid text/tinted surface fallbacks. No navigation, PIN, gesture, shell geometry, wallpaper, Home/app layout, dependency, or hosting change is introduced.
+- Static-export browser tests retain existing regressions and add glass/fallback accessibility and spacing coverage. Current screenshots are stored under `artifacts/phase-4.3/`. Real-device Safari and old-browser fallback rendering remain manual-review limitations.
 
 The story and final app list remain open product decisions. Phase 5 must be requested separately; it is not started automatically.
 

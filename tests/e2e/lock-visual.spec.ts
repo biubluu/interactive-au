@@ -29,7 +29,7 @@ test("local wallpaper covers the glass, crops naturally, and Home remains indepe
     await expect(page.getByTestId("unlock-gesture")).toHaveText("");
     await expect(page.locator(".os-lock-symbol")).toHaveCount(0);
     await expect(page.getByText("Swipe up to unlock")).toHaveCount(0);
-    await page.screenshot({ path: `artifacts/phase-4.2/lock-photo-${viewport.width}x${viewport.height}-${testInfo.project.name}.png`, fullPage: true });
+    await page.screenshot({ path: `artifacts/phase-4.3/lock-photo-${viewport.width}x${viewport.height}-${testInfo.project.name}.png`, fullPage: true });
     await page.getByRole("button", { name: "Enter passcode", exact: true }).click();
     await expect(image).toHaveCount(1);
     await enterPasscode(page);
@@ -64,7 +64,7 @@ test("all 24 hour combinations fit the narrow clock, including enlarged text", a
     for (let hour = 0; hour < 24; hour += 1) {
       await page.clock.setFixedTime(new Date(Date.UTC(2026, 9, 25, hour, 59)));
       await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
-      await expect(page.getByTestId("lock-clock")).toHaveText(`${String((hour + 7) % 24).padStart(2, "0")}:59`);
+      await expect(page.getByTestId("lock-clock")).toHaveText(`${String((hour + 7) % 24).padStart(2, "0")}.59`);
       expect(await page.locator(".os-clock").evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

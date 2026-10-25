@@ -4,7 +4,7 @@
 
 This project is a reading experience for **one alternate-universe story**, presented through a fictional phone simulation in the browser. It is not a SaaS product, an authoring platform, or a system for multiple stories.
 
-Phases 1–4.1 provide the foundation, Device Shell, OS motion, passcode, live WIB clock, and fullscreen demos. Phase 4.2 refines only Lock Screen visuals, independent wallpapers, and the invisible accessible gesture surface. Do not start Phase 5 or build real virtual app functionality, story runtime, persistence, or unrelated product features. The final story and app list remain undecided. Identify demo content as **PLACEHOLDER** in source comments and developer documentation; do not show prototype labels in normal reader presentation.
+Phases 1–4.1 provide the foundation, Device Shell, OS motion, passcode, live WIB clock, and fullscreen demos. Phase 4.2 provides independent wallpapers and the invisible accessible gesture surface. Phase 4.3 refines clock/date presentation, glass surfaces, and symmetric shortcut spacing only. Keep the canonical HH:mm clock model separate from displayed HH.mm; retain live shared WIB dates and the existing scheduler. Do not start Phase 5 or build real virtual app functionality, story runtime, persistence, or unrelated product features. The final story and app list remain undecided. Identify demo content as **PLACEHOLDER** in source comments and developer documentation; do not show prototype labels in normal reader presentation.
 
 Primary technical decision document: [docs/architecture.md](docs/architecture.md).
 
