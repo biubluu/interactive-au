@@ -1,120 +1,116 @@
-# Device Shell Design System
+# Device Shell and OS Design System
 
-Status: Phase 4. Device geometry remains as established in Phase 2; OS presentation and motion are described below. This is a fictional browser-rendered device, not real iOS hardware or OS behavior.
+Status: Phase 4.1. Physical geometry is retained from Phase 2. This is a fictional browser-rendered device, not real iOS or native hardware.
 
-## Reference and geometry
+## Device geometry
 
-The logical portrait screen reference is **393 x 852 CSS pixels**, an aspect ratio of `393 / 852` (approximately 0.4613). These are design coordinates, not a fixed application canvas. Children render at normal CSS text and control sizes; no universal transform scales the application.
+The portrait logical screen reference is **393 x 852 CSS pixels**, with aspect ratio `393 / 852`. These are design coordinates, not a universally transformed application canvas. Resting content renders at normal CSS sizes.
 
-Geometry tokens live in `src/components/device/device.css`, scoped to `.phone-shell`. The framed screen uses `aspect-ratio`; the outer chassis includes the bezel on both sides.
+Geometry tokens remain in `src/components/device/device.css`, scoped to `.phone-shell`.
 
-| Custom property | Framed | Compact | Purpose |
+| Token | Framed | Compact | Purpose |
 | --- | --- | --- | --- |
-| `--device-reference-width` | 393 | 393 | Portrait reference width |
-| `--device-reference-height` | 852 | 852 | Portrait reference height |
-| `--device-bezel` | 9px | 5px | Dark rim and metal chassis thickness |
-| `--device-screen-radius` | 49px | 39px | Rounded glass clipping boundary |
-| `--device-frame-radius` | Screen radius + bezel | Screen radius + bezel | Concentric chassis curve |
-| `--device-island-width` | 31% of screen | 31% of screen | Centered island width |
-| `--device-island-height` | 35px | 35px | Hardware cutout height |
-| `--device-island-top` | 12px | 12px | Offset from simulated glass top |
-| `--device-safe-top` | 66px | 66px | Reserved content clearance below island |
-| `--device-safe-bottom` | 28px | 28px | Bottom glass clearance |
-| `--device-safe-inline` | 24px | `clamp(16px, 5vw, 24px)` | Content and focus-ring inset |
-| `--device-stage-space` | 88px | Not used | Combined vertical breathing room |
+| `--device-reference-width` | 393 | 393 | Portrait reference |
+| `--device-reference-height` | 852 | 852 | Portrait reference |
+| `--device-bezel` | 9px | 5px | Chassis/glass separation |
+| `--device-screen-radius` | 49px | 39px | Physical glass clipping |
+| `--device-frame-radius` | Screen radius + bezel | Screen radius + bezel | Concentric chassis |
+| `--device-island-width` | 31% | 31% | Island width relative to glass |
+| `--device-island-height` | 35px | 35px | Cutout height |
+| `--device-island-top` | 12px | 12px | Cutout offset |
+| `--device-safe-top` | 66px | 66px | Fixed top content clearance |
+| `--device-safe-bottom` | 28px | 28px | Fixed bottom content clearance |
+| `--device-safe-inline` | 24px | `clamp(16px, 5vw, 24px)` | Content side inset |
+| `--device-stage-space` | 88px | Not used | Vertical stage breathing room |
 
-The framed maximum is 411px wide: 393px of glass plus two 9px bezels. Width is the minimum of that maximum, viewport width minus 64px, and the width derived from available viewport height minus stage space. This preserves the portrait ratio and keeps the chassis inside the viewport. Small physical buttons extend 3px beyond the chassis and fit within the stage clearance.
+Framed width is the minimum of 411px, viewport width minus 64px, and the width derived from viewport height minus stage space and bezel. The screen keeps its portrait ratio. Chassis metal gradients, seam highlights, side buttons, and contact/ambient shadows remain unchanged. The decorative Dynamic Island stays centered with its original CSS camera lens.
 
-The Dynamic Island is decorative, horizontally centered, non-interactive, and hidden from assistive technology. Its pill is black with a small CSS lens reflection at the right. It is not a notification system or OS control. Camera, side buttons, and wallpaper use no image assets.
+## Composition and fullscreen windows
 
-## Components and composition
+`PhoneShell` remains a Server Component accepting `children`, optional `wallpaper` (`aurora` or `midnight`), a generic `overlay`, and `contentPresentation` (`inset` by default, or `full`). It has no navigation, clock, PIN, story, or persistence state.
 
-`PhoneShell` is the public Server Component. It accepts `children`, an optional typed `wallpaper` value (`aurora` or `midnight`), and a generic `overlay` React node for full-glass composition. The frame and screen are simple markup inside it; separate exported components would add API surface without a current consumer. A private `DynamicIsland` component isolates the cutout markup.
+The OS uses full-glass composition. The shell's generic full content container has no inset/padding and clips without scrolling. OS scenes fill that area. Each scene provides an `.os-scene-content` viewport with fixed top/bottom safe-area insets and one horizontal content padding. That viewport scrolls independently; padding does not scroll away beneath the island.
 
-The shell provides physical presentation only. The page composes OS content and OS-owned overlay chrome. The shell imports no stores, events, progress, OS navigation, or storage.
+An app window paints the whole glass with an opaque dark background. Its content uses the same safe-area viewport, without an inset floating card, additional rounded window clipping, or duplicate safe-area padding. This intentionally remains an empty demo window, not a real Camera, Maps, Browser, or other app. Status chrome stays above it, and returning Home restores the launching icon's focus.
 
-## Clipping and safe areas
-
-The glass uses both `overflow: clip` and `clip-path: inset(0 round ...)`, together with its border radius. Unlike `overflow: hidden`, `overflow: clip` prevents browser focus restoration from scrolling the glass itself and displacing the island. Oversized or positioned descendants remain clipped at the rounded boundary.
-
-`.device-content` is the only internal scrolling viewport. Its top and bottom are inset by the virtual safe-area tokens, with inline padding and scroll padding for visible focus outlines. Unlike padding inside a full-height scroller, these insets keep scrolling text out of the island area. The island is a sibling above the content layer, so scrolling never changes its physical position. Long content, landscape presentation, and enlarged text remain reachable through ordinary scrolling and keyboard focus.
-
-Safe-area values are **virtual device** geometry, not readings from the user's actual phone. Do not substitute native `env(safe-area-inset-*)` values for these tokens or count the island clearance twice. OS content uses the existing inset scroller; the status bar and decorative home indicator are composed through the full-glass overlay slot without changing physical geometry.
+The glass retains `overflow: clip` and a rounded `clip-path`, so neither focus restoration nor oversized/positioned descendants can move hardware or paint outside it. Virtual safe-area tokens are independent of the reader's native phone safe areas; do not replace them with native `env(safe-area-inset-*)` values or count them twice.
 
 ## Responsive presentation
 
-- **Framed:** viewport width is at least 600px and height exceeds 540px. The entire chassis is centered in a full-height stage, with a fixed screen ratio and height-aware width. Fonts and controls retain their CSS sizes even when the glass becomes narrower.
-- **Compact:** viewport width is below 600px **or** height is at most 540px. The shell is up to 440px wide, with 6px minimum outer spacing on each side. Glass height follows available viewport height, subtracting outer space and bezel. The screen ratio adapts to the viewport to preserve usable space. Side buttons are hidden and chassis depth simplified.
-- **Short landscape:** uses compact presentation, centered horizontally. Content scrolls inside the screen when it exceeds the available height; the device is not rotated and content is not scaled down.
-- `svh` provides the fallback declaration; `dvh` follows changing mobile browser chrome. No JavaScript viewport measurement is needed during rendering.
-- There is no fixed minimum width. Long text may wrap, the page must not overflow horizontally, and the entry control remains at least 48px high.
-- Browser zoom naturally selects presentation based on the effective CSS viewport. Large text can scroll vertically rather than forcing a smaller font. Do not use `deviceScaleFactor` as a substitute for browser zoom testing.
+- **Framed:** viewport width at least 600px and height above 540px. Center the complete chassis with height-aware sizing and consistent glass proportions.
+- **Compact:** viewport width below 600px or height at most 540px. Use up to 440px width, 6px minimum outer spacing, a 5px bezel, and glass height derived from dynamic viewport height. Hide decorative side buttons.
+- **Short landscape:** keep compact presentation and native vertical scrolling inside the active safe-area viewport. Do not rotate or scale the interface.
+- Use `svh` as fallback and `dvh` for mobile chrome changes. No JavaScript layout measurements run during initial rendering.
+- There is no fixed minimum width. Portrait Home retains four columns. Names remain on one line and truncate with ellipsis when necessary, while full names remain accessible.
+- Enlarged text and effective 200% zoom may require scrolling. Controls remain reachable; the status bar, island, and home indicator remain fixed.
 
-## Visual treatment
+## Typography, artwork, and wallpaper
 
-The chassis is graphite with layered metal gradients, inset hairlines, a dark glass seam, and soft contact/ambient shadows. Decorative side controls add a recognizable hardware silhouette in framed presentation. Rounded glass and the island supply the main hardware cues without copying logos or proprietary mockups.
+The platform font stack is `-apple-system, BlinkMacSystemFont, system-ui, sans-serif`. Apple devices can use their native font naturally. No Apple font files are bundled, downloaded, or redistributed.
 
-The surrounding stage follows `prefers-color-scheme`: a quiet mineral background in light mode and charcoal in dark mode. Chassis highlights remain visible against both. The display retains its own consistent dark palette. Only OS content animates; chassis, island, status bar, and wallpaper remain stable.
+The wallpaper is original CSS artwork with rose/lavender ellipses, dark blue depth, and a lower scrim. `wallpaper="midnight"` adjusts its hue/saturation/brightness. It stays consistent across lock, passcode, and Home. App windows replace it with their own full-glass background.
 
-The placeholder wallpaper is an original CSS composition: overlapping elliptical forms, lavender and rose highlights, and deep blue shadows with a dark lower scrim for text legibility. `wallpaper="midnight"` changes its hue, saturation, and brightness through CSS. Changing wallpaper does not change application state or access local data.
+`src/features/os/app-artwork.tsx` contains original local SVG app illustrations: layered paper/calendar, a colorful photo mosaic, a metallic camera/lens, a road map, filled music/phone/message symbols, a shaded folder, a gear assembly, an envelope, and a compass. CSS controls rounded-square clipping, highlights, and shadows. Typed metadata selects artwork and base colors. Illustrative calendar markings are artwork, not a functional calendar app.
 
-The Lock Screen visibly says **PLACEHOLDER EXPERIENCE**. Home Screen has one unobtrusive **PLACEHOLDER** marker, a visually hidden Home Screen heading, and no repeated icon subtitles or dock caption. Every app control retains its accessible placeholder name, and the informational view repeats **PLACEHOLDER APP**. Wallpaper and hardware decoration are hidden from assistive technology.
+`os-icons.tsx` retains small line symbols for OS controls only. No Apple artwork, third-party phone mockup, external font, image request, or graphics engine is used. Any future third-party asset needs a documented source and appropriate license before use.
 
-## Asset policy
+The stage follows light/dark color preference, while the simulated glass has a consistent palette. Normal reader presentation contains no PLACEHOLDER banners, repeated prototype subtitles, or verbose simulated-action notices. Demo/placeholder status remains explicit in source comments and developer documentation.
 
-No external assets, fonts, Apple artwork, or phone mockup libraries are used. The CSS artwork and SVG icon paths are authored in this repository. Any future local asset must have its source and license documented before use. Screenshot artifacts show only this project's original placeholder design.
+## Lock Screen and shortcuts
 
-## Verification and screenshot review
+Clock and date remain prominent, with system typography and container-aware clock sizing. Flashlight and camera-style circles stay at lower left/right. A single centered semantic button beneath them displays the swipe affordance; there is no separate visible Unlock button. Its accessible name is **Enter passcode**.
 
-Run `npm run build` before `npm run test:e2e`: Playwright tests the actual `out/` export using the existing preview command. The viewport matrix covers 320x568, 375x667, 393x852, 430x932, 768x1024, 1366x768, 1920x1080, and 852x393 landscape. The matrix runs once in the desktop Chromium project; duplicate matrix cases in the mobile project are intentionally skipped. Existing mobile-project tests continue to cover touch-context entry behavior.
+The affordance supports touch/mouse drag as well as click, Enter, and Space. A completed swipe opens passcode entry rather than Home. Shortcut buttons only toggle visual pressed states; their accessible names identify them as visual-only controls. They request no hardware APIs or permissions and display no verbose notices.
 
-Tests inspect geometric relationships, centered island placement, status indicator clearance, normal-size unlock/app targets, reachable placeholder content, horizontal overflow, and an oversized descendant's hit testing at rounded corners. They do not compare font rasterization or require pixel-perfect screenshot matching. Axe checks WCAG A/AA rules on lock, home, and app placeholder views in both surrounding color schemes; automated checks do not replace a manual accessibility audit.
+The home indicator is a decorative 5px bottom pill. It is not itself a native gesture handler.
 
-Zoom coverage uses a 683x384 CSS viewport (the reflow space of 1366x768 at 200%) and additional 200% root text sizing. It verifies content remains scrollable and the island remains fixed. This is an automated reflow/enlarged-text approximation, not a manual test of the browser's zoom menu. Native Safari, browser chrome transitions, and physical-device behavior still need later review.
+## Passcode simulation
 
-Historical screenshots remain in ignored local artifacts at `artifacts/phase-2/` and `artifacts/phase-3/`. Current tests generate lock and home screenshots in `artifacts/phase-4/`. Re-run E2E to regenerate them. Representative files:
+Navigation is `LOCK -> PASSCODE -> HOME -> APP`. Cancel/Escape returns to Lock. Relock also returns to Lock.
 
-- `lock-320x568.png` and `home-320x568.png`
-- `lock-393x852.png` and `home-393x852.png`
-- `lock-768x1024.png` and `home-768x1024.png`
-- `lock-1366x768.png` and `home-1366x768.png`
-- `lock-1920x1080.png` and `home-1920x1080.png`
-- `lock-852x393.png` and `home-852x393.png`
-- `lock-desktop-chromium-dark.png` and `home-desktop-chromium-dark.png`
-- `home-zoom-desktop-chromium.png`
+The configured PIN is exactly **1111** by default, editable through `simulationPin` in `experience-config.ts`. This publicly shipped value is a storytelling mechanic, **not a security boundary**, credential, real authentication, encryption, account, or protected session.
 
-## Phase 3 OS presentation
+Four circles show entered length without rendering the entered digits; a polite live region announces only the digit count. The large numeric keypad supports touch, mouse, physical number keys, Backspace/Delete, and Cancel/Escape. Correct four-digit entry opens Home immediately. Incorrect entry clears the circles and provides restrained error text/announcement plus a small shake; reduced motion removes the shake. Cancel, success, and relock remove digits from typed navigation state. Nothing is persisted.
 
-The Lock Screen uses a centered, light-weight clock with container-aware sizing, a date above it, a small lock symbol, and generous negative space. Phase 4 refines clock tracking, date spacing, shadows, and bottom control depth. Flashlight/camera-style controls remain 52px circles. A lower swipe affordance sits above a separate native unlock button; gestures are optional.
+Focus moves to the passcode heading on entry, to the accessible Home heading after success, and back to the swipe affordance after cancel/relock. Key events are scoped to the active passcode panel. Numeric auto-repeat is ignored.
 
-The status bar is an OS-owned overlay: clock at left, cellular/Wi-Fi/battery artwork at right, aligned vertically to the existing island and kept outside its horizontal bounds. Its 100% battery and full signal are simulated constants, not live device readings. The home indicator is a decorative 5px pill in the bottom virtual safe area; it does not imply a gesture.
+## Shared live WIB clock
 
-Home uses a four-column grid, original rounded-square app symbols, and a translucent dock with blur and a non-blur background fallback. Grid and dock metadata are editable in `src/features/os/experience-config.ts`. Icon sizes respond to available width, while labels keep normal CSS font sizing. Additional configured apps flow into more rows and scroll normally. Dock items are intended for four slots; the current placeholder configuration uses four.
+`WibClockProvider` supplies the same clock value to Lock Screen and status chrome. Server rendering and hydration use the deterministic `--:--` / WIB fallback and do not read the device time or browser APIs.
 
-The screen scroller remains the only content scroll area. Short landscape and enlarged text may require scrolling to reach controls; the status bar, island, and home indicator remain fixed. Buttons and focused headings have visible outlines, and navigation restores focus. The hidden Home Screen heading remains available to assistive technology without occupying regular layout space.
+After mount, the provider starts one scheduler. `Intl.DateTimeFormat` explicitly uses `timeZone: "Asia/Jakarta"`; HH:mm uses 24-hour `h23` formatting, including 00:00 at midnight. Date formatting uses a fixed English presentation locale and the same WIB day. Time is not derived from the browser's local timezone.
 
-Configuration uses `clock`, `date`, and an ISO `dateTime` as a coherent fixed placeholder, plus `wallpaper: "aurora" | "midnight"`. No live clock is enabled. If live time is added later, initialize it only after hydration and clean up client timers. Wallpaper stays consistent across lock, home, and app placeholders because it belongs to the same enclosing shell.
+An initial client tick replaces the fallback. Each later timeout targets the next minute boundary, avoiding per-second rerenders. Returning to a visible tab refreshes immediately and reschedules the timer. Cleanup removes timers/listeners. Time comes from the browser device clock, so incorrect device time remains possible; no server/external time API is involved.
 
-## Phase 4 motion and gesture policy
+## Motion and gestures
 
-The shared spring has stiffness 380, damping 36, and mass 0.85. It is intentionally restrained. Scene transitions and icon presses animate transforms and opacity, not layout dimensions, wallpaper filters, or backdrop blur. Resting scene scale is always 1; these transient transitions do not replace responsive CSS sizing.
+The shared spring remains stiffness 380, damping 36, mass 0.85. Transforms and opacity provide transient motion; resting scene scale is 1. Wallpaper and backdrop blur are static.
 
-| Interaction | Default motion | Reduced motion |
+| Interaction | Default | Reduced motion |
 | --- | --- | --- |
-| Lower-region drag | Lock panel follows vertical displacement with linked opacity | Gesture recognized without large panel displacement |
-| Incomplete/cancelled swipe | Spring back to zero | Immediate reset |
-| Unlock | Lock lifts/fades; Home settles from a slight zoom | Immediate scene change |
-| Open placeholder | App surface expands from selected icon's approximate normalized origin | Immediate scene change |
-| Return home | App contracts toward its origin; Home settles into place | Immediate scene change |
-| Relock | Lock descends gently; Home recedes | Immediate scene change |
-| Icon press | Scale to 0.92 | Opacity feedback, without scaling |
+| Drag affordance | Lock panel follows pointer with linked opacity | Recognize gesture without large displacement |
+| Incomplete/cancelled drag | Spring back | Immediate reset |
+| Lock to passcode | Lock lifts/fades; keypad settles in | Immediate change |
+| Correct PIN to Home | Home settles in | Immediate change |
+| Incorrect PIN | Restrained circle shake | Error announcement only |
+| Open/close app | Expand/contract using approximate icon origin | Immediate change |
+| Relock | Lock settles downward; outgoing scene recedes | Immediate change |
+| Icon/shortcut press | Subtle scale | Opacity feedback |
 
-The drag handle has a 10px recognition threshold. Unlock distance is 18% of the content viewport height, clamped to 72–120px. Upward distance must exceed 1.4 times horizontal travel. Taps, short flicks, downward motion, horizontal drags, touch cancellation, and blur do not unlock. A cancelled spring can be grabbed again. Touch-action suppression and text-selection suppression are limited to the handle; no global scroll lock is added. The handle is above the browser's bottom edge and the decorative home indicator.
+Only the lower affordance has `touch-action: none`; native scrolling elsewhere remains available. Drag recognition starts after 10px. Unlock distance is 18% of the lock panel height, clamped to 72–120px, and upward travel must exceed 1.4 times horizontal travel. Short, diagonal, cancelled, or blur-interrupted drags do not advance. A moved drag cannot become a button click on release.
 
-App opening reads the selected icon and scene rectangles once per click to derive a transform origin. This is an approximate visual origin, not a shared-element window manager. Scene state changes immediately; exit animations are decorative, inert, and hidden from assistive technology. Focus does not wait for springs to finish. Repeated or interrupted navigation must not leave a locked input gate or a half-completed navigation state.
+Zustand navigation updates immediately. Animation completion never gates navigation or future story progress. Exiting scenes are inert, aria-hidden, non-interactive, and excluded from active layout height. Revived scenes and focus restoration retain Phase 4 interruption behavior. Icon rectangles are measured only on launch to approximate the transform origin.
 
-Home icons use coherent rounded-square geometry, refined shadows, single-line labels, and the existing four-column portrait grid. Labels truncate with ellipsis on exceptionally narrow or enlarged-text layouts rather than breaking into letters; full accessible names and hover titles remain available. The dock uses static translucent gradients, blur, saturation, and inset highlights. No proprietary artwork is used.
+Reduced-motion preference uses the existing hydration-safe external-store hook, and updates when preferences change. Motion references: [drag controls](https://motion.dev/docs/react-use-drag-controls), [presence transitions](https://motion.dev/docs/react-animate-presence).
 
-Reduced-motion media changes are observed after hydration through `useSyncExternalStore`, with a deterministic server snapshot. Initial SSR and hydration do not depend on browser preferences. Automated testing checks reduced-motion console errors, live preference changes, active transform values, input alternatives, and correct focus restoration. Motion API references: [manual drag controls](https://motion.dev/docs/react-use-drag-controls) and [presence transitions](https://motion.dev/docs/react-animate-presence).
+## Verification and screenshots
 
-Tests use Chromium mouse input and Chromium CDP touch events in the mobile context. They are not physical-device or Safari gesture verification. Static screenshots review settled appearance, not animation cadence; real-device feel still benefits from manual review. Phase 5 is not included.
+Build before E2E: tests use the actual `out/` static export on port 4173. The viewport matrix covers 320x568, 375x667, 393x852, 430x932, 768x1024, 1366x768, 1920x1080, and 852x393 landscape. Eight duplicate mobile matrix cases and one desktop copy of the mobile-only CDP touch test are deliberately skipped.
+
+Tests cover PIN correctness/error/deletion/cancel/relock, physical keyboard support, live WIB formatting/midnight/visibility, shared status/lock time, hydration diagnostics, fullscreen bounds, rounded clipping, safe areas, overflow, accessibility, gesture cancellation, rapid transitions, reduced motion, and focus restoration. Axe checks all four scenes in both surroundings.
+
+Zoom tests use an effective 683x384 CSS viewport plus 200% root text sizing. This is a reflow/enlarged-text approximation, not manual browser-menu zoom. Touch uses Chromium CDP input, not a physical device. Safari, native browser chrome behavior, and real-device animation feel remain manual-review limitations.
+
+Current screenshots are ignored local artifacts at `artifacts/phase-4.1/`. Tests freeze device time to 09:41 WIB for stable visual review while production uses live time. Each viewport generates `lock-<width>x<height>.png`, `passcode-<width>x<height>.png`, `home-<width>x<height>.png`, and `app-<width>x<height>.png`. Dark mobile/desktop variants and enlarged-text Home screenshots are also generated. Earlier phase screenshots remain historical artifacts.
+
+Phase 5 is not included.

@@ -1,14 +1,17 @@
-﻿import { PhoneShell } from "../components/device/phone-shell";
+import { PhoneShell } from "../components/device/phone-shell";
 import { DeviceChrome } from "../features/os/device-chrome";
 import { experienceConfig } from "../features/os/experience-config";
 import { OsExperience } from "../features/os/os-experience";
+import { WibClockProvider } from "../features/os/wib-clock-provider";
 
 export default function Page() {
   return (
     <main className="device-stage">
-      <PhoneShell wallpaper={experienceConfig.wallpaper} overlay={<DeviceChrome clock={experienceConfig.clock} />}>
-        <OsExperience config={experienceConfig} />
-      </PhoneShell>
+      <WibClockProvider>
+        <PhoneShell contentPresentation="full" wallpaper={experienceConfig.wallpaper} overlay={<DeviceChrome />}>
+          <OsExperience config={experienceConfig} />
+        </PhoneShell>
+      </WibClockProvider>
     </main>
   );
 }

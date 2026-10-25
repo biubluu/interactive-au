@@ -9,18 +9,14 @@ export type PlaceholderApp = Readonly<{
 }>;
 
 export type ExperienceConfig = Readonly<{
-  clock: string;
-  date: string;
-  dateTime: string;
+  simulationPin: string;
   wallpaper: "aurora" | "midnight";
   apps: readonly PlaceholderApp[];
 }>;
 
 // Display-only PLACEHOLDER configuration, not a virtual app registry.
 export const experienceConfig: ExperienceConfig = {
-  clock: "9:41",
-  date: "Sunday, October 25",
-  dateTime: "2026-10-25T09:41:00",
+  simulationPin: "1111",
   wallpaper: "aurora",
   apps: [
     { id: "calendar", name: "Calendar", icon: "calendar", color: "#df564b", placement: "grid" },

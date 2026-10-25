@@ -1,4 +1,4 @@
-.os-chrome { position: absolute; inset: 0; z-index: 1; pointer-events: none; color: white; }
+.os-chrome { position: absolute; inset: 0; z-index: 3; pointer-events: none; color: white; }
 .os-status-bar {
   position: absolute; top: var(--device-island-top); inset-inline: 7%; height: var(--device-island-height);
   display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700;
@@ -17,11 +17,14 @@
 .os-battery > span { display: block; height: 100%; border-radius: 1px; background: white; }
 .os-battery::after { content: ""; position: absolute; right: -3px; top: 3px; height: 3px; width: 2px; background: #ffffffa6; border-radius: 0 1px 1px 0; }
 .os-home-indicator { position: absolute; bottom: 9px; left: 50%; translate: -50% 0; width: 34%; height: 5px; border-radius: 99px; background: #fff; }
-.os-scenes { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); min-height: 100%; }
+.os-scenes { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 1fr); height: 100%; }
 .os-view { min-height: 100%; display: flex; flex-direction: column; color: white; overflow-wrap: anywhere; font-size: 1rem; }
-.os-scene { grid-area: 1 / 1; min-width: 0; }
+.os-scene { position: relative; grid-area: 1 / 1; min-width: 0; min-height: 0; height: 100%; overflow: clip; padding: 0; }
+.os-scene-content { position: absolute; inset: var(--device-safe-top) 0 var(--device-safe-bottom); display: flex; flex-direction: column; padding-inline: var(--device-safe-inline); overflow: auto; overscroll-behavior: contain; scroll-padding-block: 8px; scrollbar-width: thin; scrollbar-color: #ffffff40 transparent; }
 .os-scene[data-exiting="true"] { position: absolute; inset: 0; pointer-events: none; }
 .os-lock-panel { display: flex; flex-direction: column; min-height: 100%; flex: 1; }
+.os-lock { background: linear-gradient(180deg, #11132461 0%, #11132461 35%, transparent 75%); }
+.os-home, .os-passcode { background: linear-gradient(180deg, #11132452 0%, #11132452 40%, transparent 80%); }
 .os-view button { cursor: pointer; }
 .os-view button:focus-visible, .os-view h1:focus-visible { outline: 2px solid white; outline-offset: 4px; }
 .os-view h1 { scroll-margin-block: 12px; }
@@ -30,8 +33,6 @@
 .os-date { font-size: clamp(1rem, 5cqw, 1.25rem); font-weight: 500; letter-spacing: -.025em; }
 .os-clock { margin-top: 3px; font-size: clamp(4.5rem, 26cqw, 6.5rem); line-height: 1; font-weight: 200; letter-spacing: -0.07em; font-variant-numeric: tabular-nums; }
 .os-placeholder-label { font-size: 0.625rem; font-weight: 700; letter-spacing: .14em; line-height: 1.8; text-align: center; }
-.os-lock-clock .os-placeholder-label { margin-top: 20px; font-size: .5625rem; letter-spacing: .18em; }
-.os-shortcut-notice { margin-block: auto 12px; padding-top: 20px; font-size: .875rem; line-height: 1.5; text-align: center; text-shadow: 0 1px 6px #000; }
 .os-lock-bottom { margin-top: auto; padding-top: 12px; }
 .os-shortcuts { display: flex; justify-content: space-between; padding-inline: 8px; }
 .os-shortcut { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: #171725a6; backdrop-filter: blur(16px); border: 1px solid #ffffff20; box-shadow: inset 0 1px 1px #ffffff12, 0 4px 12px #0002; }
@@ -40,24 +41,37 @@
 .os-swipe-zone { min-height: 52px; margin-top: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; touch-action: none; user-select: none; cursor: grab; font-size: .75rem; font-weight: 500; text-shadow: 0 1px 5px #0008; }
 .os-swipe-zone:active { cursor: grabbing; }
 .os-swipe-zone svg { width: 22px; height: 18px; }
-.os-unlock { display: flex; align-items: center; justify-content: center; min-height: 44px; width: 100%; font-size: .75rem; font-weight: 600; border-radius: 20px; }
-.os-home-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 20px; min-height: 44px; }
-.os-demo-badge { font-size: .5625rem; letter-spacing: .16em; font-weight: 600; text-shadow: 0 1px 5px #0008; }
+.os-unlock { min-height: 56px; width: 100%; border-radius: 20px; }
+.os-home-header { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 20px; min-height: 44px; }
 .os-lock-control { width: 44px; height: 44px; flex: none; border-radius: 50%; background: #191a3059; display: grid; place-items: center; }
 .os-lock-control svg { width: 18px; height: 18px; }
 .os-app-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px 14px; padding-bottom: 24px; }
 .os-app-button { display: flex; align-items: center; flex-direction: column; min-width: 0; min-height: 44px; gap: 6px; border-radius: 14px; }
 .os-app-icon { display: grid; place-items: center; width: min(100%, 62px); aspect-ratio: 1; flex: none; color: white; border-radius: 23%; background: linear-gradient(150deg, #ffffff40, transparent 55%), var(--app-color); box-shadow: inset 0 1px 1px #ffffff60, inset 0 -1px 1px #0002, 0 4px 9px #0003; }
-.os-app-icon svg { width: 58%; height: 58%; }
+.os-app-icon { overflow: hidden; }
+.os-app-icon .os-app-artwork { width: 100%; height: 100%; }
 .os-app-label { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .75rem; line-height: 1.4; letter-spacing: -.02em; text-align: center; text-shadow: 0 1px 4px #0009; }
 .os-dock-area { margin-top: auto; padding-top: 24px; padding-bottom: 2px; }
 .os-dock { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: center; gap: 12px; padding: 15px 12px; border-radius: 30px; background: linear-gradient(155deg, #ffffff26, #c8b8dd14), #a6a0ba40; border: 1px solid #ffffff40; backdrop-filter: blur(24px) saturate(1.35); box-shadow: inset 0 1px 1px #ffffff40, inset 0 -1px 1px #ffffff0d, 0 8px 24px #0002; }
 .os-dock-app { justify-content: center; }
-.os-app-preview { display: flex; flex-direction: column; align-items: center; gap: 20px; min-height: 100%; padding: 0 8px 12px; text-align: center; border-radius: 26px; background: #161523c9; }
+.os-app { padding: 0; background: #11141e; }
+.os-app-preview { display: flex; flex-direction: column; align-items: center; gap: 20px; min-height: 100%; padding-block: 12px; text-align: center; }
 .os-back { align-self: start; min-height: 48px; padding: 8px; font-size: .875rem; font-weight: 600; }
 .os-preview-icon { margin-top: 36px; width: 72px; }
 .os-app-preview h1 { font-size: 1.75rem; font-weight: 600; }
-.os-app-preview > p:last-child { background: #171725c9; border: 1px solid #ffffff26; border-radius: 20px; padding: 20px; font-size: 1rem; line-height: 1.7; }
+.os-app-preview > p:last-child { color: #c4c7d3; padding: 20px; font-size: 1rem; line-height: 1.7; }
+.os-passcode-panel { display: flex; flex-direction: column; align-items: center; width: 100%; min-height: 100%; justify-content: center; padding-block: 12px; }
+.os-passcode-panel header { text-align: center; }
+.os-passcode-panel h1 { font-size: 1.375rem; font-weight: 500; letter-spacing: -.025em; }
+.os-pin-dots { display: flex; justify-content: center; gap: 20px; margin-block: 24px 12px; }
+.os-pin-dots > span { width: 12px; height: 12px; border: 1px solid white; border-radius: 50%; }
+.os-pin-dots > span[data-filled="true"] { background: white; }
+.os-pin-error { min-height: 2.5em; max-width: 22ch; font-size: .8125rem; line-height: 1.4; margin-inline: auto; }
+.os-pin-keypad { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 22px; width: min(100%, 288px); margin-top: 14px; }
+.os-pin-key { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; aspect-ratio: 1; min-height: 52px; border-radius: 50%; background: #171a344d; border: 1px solid #ffffff18; box-shadow: inset 0 1px 1px #ffffff20; }
+.os-pin-key > span { font-size: 1.875rem; font-weight: 350; line-height: 1.15; }
+.os-pin-key small { font-size: .5625rem; letter-spacing: .14em; min-height: 1.4em; font-weight: 600; }
+.os-pin-action { min-height: 48px; align-self: center; font-size: .875rem; border-radius: 20px; }
 @container (max-width: 320px) {
   .os-app-grid { gap: 24px 8px; }
   .os-app-label { font-size: .6875rem; }
@@ -65,6 +79,8 @@
   .os-status-bar { inset-inline: 6%; font-size: 11px; }
   .os-cellular { gap: 1px; }
   .os-battery { width: 19px; }
+  .os-pin-keypad { gap: 12px 18px; width: min(100%, 246px); }
+  .os-pin-dots { margin-top: 18px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

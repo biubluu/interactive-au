@@ -1,12 +1,12 @@
-﻿# Interactive AU Architecture
+# Interactive AU Architecture
 
-Status: Phase 4 OS motion, gestures, and visual refinement built on the Phase 3 lock/home simulation. The five boundaries remain authoritative. Virtual app functionality, story runtime, and persistence remain planned.
+Status: Phase 4.1 passcode flow, live WIB clock, fullscreen demo windows, and visual refinement. The five boundaries remain authoritative. Phase 5, real virtual app functionality, story runtime, and persistence remain unimplemented. Phase 4.1 decisions supersede earlier fixed-clock, visible-placeholder, and content-scrolling details retained below as phase history.
 
 ## Product goals and boundaries
 
 Interactive AU is an interactive storytelling website for one alternate-universe story. Readers experience the story inside a fictional phone simulation, with a premium, mobile-first design inspired by modern iOS 27. This is a visual direction, not an implementation of real iOS.
 
-The final story and virtual app list are undecided. Mark every example or temporary piece of content **PLACEHOLDER**. Do not assume specific characters, plot points, apps, or authoring features are product requirements.
+The final story and virtual app list are undecided. Mark temporary data and examples as **PLACEHOLDER** in source comments and developer documentation. Normal reader presentation omits prototype labels and verbose simulation notices. Do not assume specific characters, plot points, apps, or authoring features are final product requirements.
 
 The MVP has no authentication, backend, database, CMS, external API, telemetry, or access to native phone data. The project does not provide a platform for multiple stories, an editor, a plugin system, or cross-device synchronization.
 
@@ -93,7 +93,7 @@ Use semantic HTML elements and native buttons for controls. All primary actions 
 
 Respect `prefers-reduced-motion`, including in Motion configuration. Use minimal transitions for that preference. Animation completion must not be the sole trigger for progress or access to controls.
 
-Use original or appropriately licensed assets and document sources and licenses when adding them. Avoid HTML injection, `eval`, secrets, and external network requests. All temporary text must visibly appear as **PLACEHOLDER** in the reader experience, not only in code comments.
+Use original or appropriately licensed assets and document sources and licenses when adding them. Avoid HTML injection, `eval`, secrets, and external network requests. Demo status is documented in source and developer documentation without unnecessary prototype terminology in reader-facing UI.
 
 ## Verification strategy
 
@@ -145,6 +145,18 @@ Tests follow implemented behavior. Do not create tests for speculative UI or fea
 - `useOsReducedMotion` uses React's external-store hydration contract: a deterministic server snapshot is reused for hydration, then the media preference is synchronized and observed for changes. MotionConfig receives the synchronized policy. No matchMedia reads occur during server rendering, and fixed time/date remain unchanged.
 - Home Screen has a visually hidden accessible heading and one small visible PLACEHOLDER marker. Repeated icon subtitles and the dock caption are removed; full placeholder names remain on every button. Labels stay on one line with ellipsis only when necessary, retaining complete accessible names and hover titles. Motion changes only transient visual transforms/opacity, not responsive application sizing.
 - Tests retain the Phase 3 behavior and shell checks and add continuous mouse drag, touch input/cancellation, invalid gesture starts, spring-back, blur cancellation, rapid/interrupted navigation, icon press/origin, reduced-motion hydration and preference changes, and narrow/landscape layout. Screenshots are generated under `artifacts/phase-4/`.
+
+## Phase 4.1 decisions
+
+- Navigation now follows `lock -> passcode -> home -> app`. The typed passcode variant carries only in-memory digits and error feedback. A successful swipe or activation of the semantic swipe-affordance button opens passcode entry, never Home directly. Four correct digits automatically open Home. Invalid entry clears digits and provides a restrained shake and accessible error. Backspace/Delete, Cancel/Escape, relock, and focus restoration are handled without animation-completion gates.
+- `simulationPin` in the trusted presentation configuration defaults to `1111`. It is publicly shipped storytelling data, not a secret, authentication system, encryption, account mechanism, or security boundary. The factory validates exactly four numeric characters. Digits are represented by circles, never rendered as entered plaintext, never persisted, and disappear from navigation state on success/cancel/relock.
+- `WibClockProvider` encloses the composed shell content and chrome, keeping one clock source per experience. SSR and the first hydration render use `--:--` and a stable WIB date fallback. Only the mounted clock scheduler reads `Date.now()`. Explicit `Intl.DateTimeFormat` instances use `timeZone: "Asia/Jakarta"` and 24-hour `h23` formatting. A single timeout aligns updates to the next minute; visibility restoration refreshes and reschedules it. Cleanup removes the timeout and listener. No per-second polling or external time API is used.
+- Clock time is derived from the browser device clock, so device clock inaccuracies remain possible. Clock formatting tests run independently of host timezone, including the WIB midnight date transition. Browser tests use a non-Jakarta host timezone and verify lock/status consistency, visibility refresh, and hydration console errors.
+- `PhoneShell` remains a Server Component without OS imports/state. A generic `contentPresentation="full"` option removes the default content inset; chassis dimensions, glass ratio, radii, island, and clipping remain intact. Each OS scene occupies the whole glass and supplies one fixed safe-area scrolling viewport. The app scene paints an opaque fullscreen background, with no floating card, inset window, nested rounded clip, or repeated safe-area padding. Chrome stays above scene content.
+- The system font stack is `-apple-system, BlinkMacSystemFont, system-ui, sans-serif`, with no bundled Apple fonts. `AppArtwork` renders original local SVG illustrations selected by typed icon metadata: paper, lens, layered folder, mosaic, map, filled symbols, and instrument detail. The existing line symbols remain only for small OS controls. No proprietary assets, external font requests, or dependencies were added.
+- Visible prototype labels and verbose shortcut notices are removed. Shortcut buttons provide visual pressed-state feedback and names explicitly identifying visual-only controls. The swipe affordance is the accessible native button; drag-distance tracking prevents an incomplete drag from becoming a click. App names and reader-facing demo emptiness remain simple; source comments and developer docs identify them as placeholders.
+- `devIndicators: false` hides the Next.js development indicator using the supported configuration while keeping export/trailing-slash settings and diagnostics. It does not disable build/runtime errors. See the [official devIndicators reference](https://nextjs.org/docs/app/api-reference/config/next-config-js/devIndicators).
+- Existing motion, inert exits, reduced-motion hydration policy, native scrolling, icon origins, and focus contracts are retained. Tests explicitly depending on old clock text, a separate Unlock button, or visible PLACEHOLDER labels are updated. Static-export E2E captures lock/passcode/home/fullscreen-app screenshots under `artifacts/phase-4.1/`.
 
 The story and final app list remain open product decisions. Phase 5 must be requested separately; it is not started automatically.
 

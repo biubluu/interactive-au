@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { animate, motion, useDragControls, useIsPresent, useMotionValue, useTransform } from "motion/react";
-import type { ExperienceConfig } from "./experience-config";
 import { OsIcon } from "./os-icons";
 import { isUnlockSwipe, osSpring, unlockDistance } from "./os-motion";
 import { useOsReducedMotion } from "./use-os-reduced-motion";
+import { useWibClock } from "./wib-clock-provider";
 
-export function LockScreen({ config, onUnlock }: Readonly<{ config: ExperienceConfig; onUnlock: () => void }>) {
+export function LockScreen({ onUnlock }: Readonly<{ onUnlock: () => void }>) {
+  const clock = useWibClock();
   const reduced = useOsReducedMotion();
   const isPresent = useIsPresent();
   const controls = useDragControls();
@@ -15,7 +16,8 @@ export function LockScreen({ config, onUnlock }: Readonly<{ config: ExperienceCo
   const opacity = useTransform(dragY, (value) => reduced ? 1 : Math.max(0.25, 1 + value / 340));
   const threshold = useRef(96);
   const [flashlight, setFlashlight] = useState(false);
-  const [notice, setNotice] = useState("");
+  const [camera, setCamera] = useState(false);
+  const gestureMoved = useRef(false);
 
   useEffect(() => {
     // AnimatePresence can revive a scene while its previous exit is still running.
@@ -26,6 +28,7 @@ export function LockScreen({ config, onUnlock }: Readonly<{ config: ExperienceCo
   useEffect(() => {
     function cancelOnBlur() {
       controls.cancel();
+      gestureMoved.current = true;
       dragY.stop();
       dragY.set(0);
     }
@@ -35,7 +38,7 @@ export function LockScreen({ config, onUnlock }: Readonly<{ config: ExperienceCo
 
   function commitUnlock() {
     setFlashlight(false);
-    setNotice("");
+    setCamera(false);
     onUnlock();
   }
 
@@ -43,9 +46,10 @@ export function LockScreen({ config, onUnlock }: Readonly<{ config: ExperienceCo
     animate(dragY, 0, reduced ? { duration: 0 } : osSpring);
   }
 
-  function startSwipe(event: PointerEvent<HTMLDivElement>) {
+  function startSwipe(event: PointerEvent<HTMLButtonElement>) {
     if (!event.isPrimary || event.button !== 0) return;
-    const viewport = event.currentTarget.closest(".device-content");
+    gestureMoved.current = false;
+    const viewport = event.currentTarget.closest(".os-lock-panel");
     threshold.current = unlockDistance(viewport?.clientHeight ?? 600);
     dragY.stop();
     controls.start(event, { distanceThreshold: 10 });
@@ -57,34 +61,36 @@ export function LockScreen({ config, onUnlock }: Readonly<{ config: ExperienceCo
       dragConstraints={{ top: -260, bottom: 0 }} dragElastic={0.08}
       style={{ y: dragY, opacity }}
       transformTemplate={reduced ? () => "none" : undefined}
+      onDragStart={() => { gestureMoved.current = true; }}
       onDragEnd={(event, info) => {
         if (event.type !== "pointercancel" && isUnlockSwipe(info.offset, threshold.current)) commitUnlock();
         else reset();
       }}>
       <header className="os-lock-clock">
         <span className="os-lock-symbol"><OsIcon name="lock" /></span>
-        <p className="os-date"><time dateTime={config.dateTime.slice(0, 10)}>{config.date}</time></p>
-        <h1 className="os-clock" aria-label={`Lock Screen, ${config.clock}`}><time dateTime={config.dateTime}>{config.clock}</time></h1>
-        <p className="os-placeholder-label">PLACEHOLDER EXPERIENCE</p>
+          <p className="os-date"><time dateTime={clock.dateKey || undefined}>{clock.date}</time></p>
+          <h1 className="os-clock" aria-label={`Lock Screen, ${clock.time} WIB`}><time data-testid="lock-clock" dateTime={clock.dateTime}>{clock.time}</time></h1>
       </header>
-      <p role="status" className="os-shortcut-notice">{notice}</p>
       <div className="os-lock-bottom">
         <div className="os-shortcuts">
           <motion.button whileTap={reduced ? { opacity: 0.7 } : { scale: 0.92 }} className="os-shortcut"
-            aria-label="Simulate flashlight" aria-pressed={flashlight}
-            onClick={() => { setFlashlight(!flashlight); setNotice(`PLACEHOLDER: simulated flashlight ${flashlight ? "off" : "on"}.`); }}>
+            aria-label="Flashlight shortcut (visual only)" aria-pressed={flashlight}
+            onClick={() => setFlashlight(!flashlight)}>
             <OsIcon name="flashlight" />
           </motion.button>
           <motion.button whileTap={reduced ? { opacity: 0.7 } : { scale: 0.92 }} className="os-shortcut"
-            aria-label="Simulate camera" onClick={() => setNotice("PLACEHOLDER: camera preview is simulated. No camera is accessed.")}>
+            aria-label="Camera shortcut (visual only)" aria-pressed={camera} onClick={() => setCamera(!camera)}>
             <OsIcon name="camera" />
           </motion.button>
         </div>
-        <div className="os-swipe-zone" data-testid="unlock-gesture" aria-hidden="true"
-          onPointerDown={startSwipe} onPointerCancel={() => { controls.cancel(); reset(); }}>
+        <button className="os-swipe-zone os-unlock" data-testid="unlock-gesture" aria-label="Enter passcode"
+          onPointerDown={startSwipe} onPointerCancel={() => { gestureMoved.current = true; controls.cancel(); reset(); }}
+          onClick={(event) => {
+            if (event.detail !== 0 && gestureMoved.current) { event.preventDefault(); return; }
+            commitUnlock();
+          }}>
           <OsIcon name="arrow" /><span>Swipe up to unlock</span>
-        </div>
-        <button className="os-unlock" onClick={commitUnlock}>Unlock</button>
+        </button>
       </div>
     </motion.div>
   );

@@ -1,41 +1,57 @@
 import { describe, expect, it } from "vitest";
 import { createOsStore } from "../../src/features/os/os-store";
 
-describe("transient OS navigation", () => {
-  it("does not emit duplicate navigation on repeated actions", () => {
-    const store = createOsStore(["notes"]);
-    let changes = 0;
-    store.subscribe(() => { changes += 1; });
-    for (let index = 0; index < 10; index += 1) store.getState().unlock();
-    for (let index = 0; index < 10; index += 1) store.getState().openApp("notes");
-    for (let index = 0; index < 10; index += 1) store.getState().goHome();
-    for (let index = 0; index < 10; index += 1) store.getState().lock();
-    expect(changes).toBe(4);
-    expect(store.getState().view).toEqual({ kind: "lock" });
-  });
-
-  it("starts locked and prevents app access before unlocking", () => {
+describe("OS passcode navigation", () => {
+  it("requires passcode entry after unlock and refuses direct app access", () => {
     const store = createOsStore(["notes"]);
     store.getState().openApp("notes");
-    store.getState().goHome();
     expect(store.getState().view).toEqual({ kind: "lock" });
-  });
-
-  it("unlocks, opens a configured placeholder, returns home, and locks", () => {
-    const store = createOsStore(["notes"]);
     store.getState().unlock();
+    store.getState().openApp("notes");
+    expect(store.getState().view).toEqual({ kind: "passcode", digits: "", error: false });
+    "1111".split("").forEach((digit) => store.getState().enterDigit(digit));
     expect(store.getState().view).toEqual({ kind: "home" });
     store.getState().openApp("notes");
     expect(store.getState().view).toEqual({ kind: "app", appId: "notes" });
     store.getState().goHome();
     expect(store.getState().view).toEqual({ kind: "home" });
+  });
+
+  it("clears incorrect entry and permits a correct retry", () => {
+    const store = createOsStore([]);
+    store.getState().unlock();
+    "1234".split("").forEach((digit) => store.getState().enterDigit(digit));
+    expect(store.getState().view).toEqual({ kind: "passcode", digits: "", error: true });
+    store.getState().enterDigit("1");
+    expect(store.getState().view).toEqual({ kind: "passcode", digits: "1", error: false });
+    "111".split("").forEach((digit) => store.getState().enterDigit(digit));
+    expect(store.getState().view).toEqual({ kind: "home" });
+  });
+
+  it("supports deletion, cancel/relock, and clears digits outside the passcode state", () => {
+    const store = createOsStore([]);
+    store.getState().unlock();
+    store.getState().enterDigit("1");
+    store.getState().enterDigit("2");
+    store.getState().deleteDigit();
+    expect(store.getState().view).toEqual({ kind: "passcode", digits: "1", error: false });
     store.getState().lock();
+    store.getState().unlock();
+    expect(store.getState().view).toEqual({ kind: "passcode", digits: "", error: false });
+    "1111".split("").forEach((digit) => store.getState().enterDigit(digit));
+    store.getState().lock();
+    expect(store.getState().view).toEqual({ kind: "lock" });
+    store.getState().enterDigit("1");
     expect(store.getState().view).toEqual({ kind: "lock" });
   });
 
-  it("rejects unknown IDs and cannot skip from one app to another", () => {
+  it("rejects invalid inputs and unknown apps; repeated navigation is idempotent", () => {
     const store = createOsStore(["notes", "camera"]);
-    store.getState().unlock();
+    for (let index = 0; index < 8; index += 1) store.getState().unlock();
+    store.getState().enterDigit("x");
+    store.getState().enterDigit("11");
+    expect(store.getState().view).toEqual({ kind: "passcode", digits: "", error: false });
+    "1111111".split("").forEach((digit) => store.getState().enterDigit(digit));
     store.getState().openApp("unknown");
     expect(store.getState().view).toEqual({ kind: "home" });
     store.getState().openApp("notes");
@@ -44,14 +60,12 @@ describe("transient OS navigation", () => {
     expect(store.getState().view).toEqual({ kind: "app", appId: "notes" });
   });
 
-  it("isolates instances and starts a new instance locked", () => {
-    const first = createOsStore(["notes"]);
+  it("uses configurable four-digit simulation PINs and isolates instances", () => {
+    expect(() => createOsStore([], "123")).toThrow();
+    const first = createOsStore([], "2468");
     first.getState().unlock();
-    first.getState().openApp("notes");
-    const second = createOsStore(["notes"]);
-    expect(second.getState().view).toEqual({ kind: "lock" });
-    first.getState().lock();
-    first.getState().unlock();
+    "2468".split("").forEach((digit) => first.getState().enterDigit(digit));
     expect(first.getState().view).toEqual({ kind: "home" });
+    expect(createOsStore([]).getState().view).toEqual({ kind: "lock" });
   });
 });

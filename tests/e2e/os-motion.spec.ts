@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { enterPasscode, openHome } from "./helpers";
 
 async function position(surface: Locator) {
   await surface.scrollIntoViewIfNeeded();
@@ -33,6 +34,8 @@ test("mouse drag follows the pointer, cancels short swipes, then unlocks", async
   await expect(page.getByTestId("os-lock")).toBeVisible();
   await expect.poll(async () => Math.abs(await displacement(panel))).toBeLessThan(0.5);
   await mouseSwipe(page, surface, 160);
+  await expect(page.getByRole("heading", { name: "Enter Passcode", exact: true })).toBeFocused();
+  await enterPasscode(page);
   await expect(page.getByRole("heading", { name: "Home Screen", exact: true })).toBeFocused();
 });
 
@@ -55,6 +58,8 @@ test("real touch input cancels an incomplete swipe and unlocks with a longer swi
   await expect(page.getByTestId("os-lock")).toBeVisible();
   await expect.poll(async () => Math.abs(await displacement(page.getByTestId("lock-panel")))).toBeLessThan(0.5);
   await swipe(160);
+  await expect(page.getByTestId("os-passcode")).toBeVisible();
+  await enterPasscode(page);
   await expect(page.getByTestId("os-home")).toBeVisible();
   await session.detach();
 });
@@ -63,6 +68,8 @@ test("taps, horizontal drags, and drags outside the lower handle never unlock", 
   await page.setViewportSize({ width: 393, height: 852 });
   await page.goto("/");
   await page.getByTestId("unlock-gesture").click();
+  await expect(page.getByTestId("os-passcode")).toBeVisible();
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
   await expect(page.getByTestId("os-lock")).toBeVisible();
   await mouseSwipe(page, page.getByTestId("unlock-gesture"), 100, 140);
   await expect(page.getByTestId("os-lock")).toBeVisible();
@@ -75,11 +82,13 @@ test("taps, horizontal drags, and drags outside the lower handle never unlock", 
 
 test("rapid navigation is idempotent, exits are inert, and focus returns to the app icon", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Unlock", exact: true }).evaluate((button: HTMLButtonElement) => {
+  await page.getByRole("button", { name: "Enter passcode", exact: true }).evaluate((button: HTMLButtonElement) => {
     for (let index = 0; index < 8; index += 1) button.click();
   });
+  await expect(page.getByTestId("os-passcode")).toHaveCount(1);
+  await enterPasscode(page);
   await expect(page.getByTestId("os-home")).toHaveCount(1);
-  await page.getByRole("button", { name: "Open Notes — PLACEHOLDER" }).evaluate((button: HTMLButtonElement) => {
+  await page.getByRole("button", { name: "Open Notes" }).evaluate((button: HTMLButtonElement) => {
     for (let index = 0; index < 8; index += 1) button.click();
   });
   await expect(page.getByRole("heading", { name: "Notes", exact: true })).toBeFocused();
@@ -91,10 +100,11 @@ test("rapid navigation is idempotent, exits are inert, and focus returns to the 
   await page.getByRole("button", { name: "Back to Home" }).evaluate((button: HTMLButtonElement) => {
     for (let index = 0; index < 8; index += 1) button.click();
   });
-  await expect(page.getByRole("button", { name: "Open Notes — PLACEHOLDER" })).toBeFocused();
+  await expect(page.getByRole("button", { name: "Open Notes" })).toBeFocused();
   await page.getByRole("button", { name: "Lock device" }).evaluate((button: HTMLButtonElement) => button.click());
-  await expect(page.getByRole("button", { name: "Unlock", exact: true })).toBeFocused();
-  await page.getByRole("button", { name: "Unlock", exact: true }).evaluate((button: HTMLButtonElement) => button.click());
+  await expect(page.getByRole("button", { name: "Enter passcode", exact: true })).toBeFocused();
+  await page.getByRole("button", { name: "Enter passcode", exact: true }).evaluate((button: HTMLButtonElement) => button.click());
+  await enterPasscode(page);
   await expect(page.getByRole("heading", { name: "Home Screen", exact: true })).toBeFocused();
   await expect(page.locator(".os-scene[data-exiting='false']")).toHaveCount(1);
 });
@@ -102,9 +112,9 @@ test("rapid navigation is idempotent, exits are inert, and focus returns to the 
 test("a swiped lock screen can be relocked immediately during its exit", async ({ page }) => {
   await page.goto("/");
   await mouseSwipe(page, page.getByTestId("unlock-gesture"), 160);
-  await expect(page.getByTestId("os-home")).toBeVisible();
-  await page.getByRole("button", { name: "Lock device" }).evaluate((button: HTMLButtonElement) => button.click());
-  await expect(page.getByRole("button", { name: "Unlock", exact: true })).toBeFocused();
+  await expect(page.getByTestId("os-passcode")).toBeVisible();
+  await page.getByRole("button", { name: "Cancel", exact: true }).evaluate((button: HTMLButtonElement) => button.click());
+  await expect(page.getByRole("button", { name: "Enter passcode", exact: true })).toBeFocused();
   await expect.poll(async () => Math.abs(await displacement(page.getByTestId("lock-panel")))).toBeLessThan(0.5);
 });
 
@@ -128,16 +138,18 @@ test("reduced motion avoids scene transforms and retains button and swipe naviga
   await page.goto("/");
   await expect(page.getByTestId("os-lock")).toHaveAttribute("data-motion", "reduced");
   await mouseSwipe(page, page.getByTestId("unlock-gesture"), 160);
+  await expect(page.getByTestId("os-passcode")).toHaveAttribute("data-motion", "reduced");
+  await enterPasscode(page);
   await expect(page.getByTestId("os-home")).toHaveAttribute("data-motion", "reduced");
   const transform = await page.getByTestId("os-home").evaluate((element) => {
     const matrix = new DOMMatrixReadOnly(getComputedStyle(element).transform);
     return [matrix.a, matrix.d, matrix.m41, matrix.m42];
   });
   expect(transform).toEqual([1, 1, 0, 0]);
-  await page.getByRole("button", { name: "Open Notes — PLACEHOLDER" }).click();
+  await page.getByRole("button", { name: "Open Notes" }).click();
   await expect(page.getByRole("heading", { name: "Notes", exact: true })).toBeFocused();
   await page.getByRole("button", { name: "Back to Home" }).click();
-  await expect(page.getByRole("button", { name: "Open Notes — PLACEHOLDER" })).toBeFocused();
+  await expect(page.getByRole("button", { name: "Open Notes" })).toBeFocused();
   expect(errors).toEqual([]);
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await expect(page.getByTestId("os-home")).toHaveAttribute("data-motion", "full");
@@ -145,8 +157,8 @@ test("reduced motion avoids scene transforms and retains button and swipe naviga
 
 test("app icons give subtle press feedback before opening", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Unlock", exact: true }).click();
-  const notes = page.getByRole("button", { name: "Open Notes — PLACEHOLDER" });
+  await openHome(page);
+  const notes = page.getByRole("button", { name: "Open Notes" });
   const start = await position(notes);
   await page.mouse.move(start.x, start.y);
   await page.mouse.down();
@@ -161,14 +173,14 @@ test("narrow and landscape layouts retain four columns, intact labels, and nativ
     await page.goto("/");
     await page.mouse.wheel(0, 240);
     await expect(page.getByTestId("os-lock")).toBeVisible();
-    await page.getByRole("button", { name: "Unlock", exact: true }).click();
+    await openHome(page);
     expect(await page.locator(".os-app-grid").evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").length)).toBe(4);
     const labels = await page.locator(".os-app-label").evaluateAll((elements) => elements.every((element) =>
       getComputedStyle(element).whiteSpace === "nowrap"));
     expect(labels).toBe(true);
-    await expect(page.getByTestId("os-home").getByText("PLACEHOLDER", { exact: true })).toHaveCount(1);
+    await expect(page.getByTestId("os-home").getByText("PLACEHOLDER", { exact: false })).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await page.getByRole("button", { name: "Open Browser — PLACEHOLDER" }).click();
+    await page.getByRole("button", { name: "Open Browser" }).click();
     await expect(page.getByRole("heading", { name: "Browser", exact: true })).toBeFocused();
   }
 });

@@ -135,6 +135,9 @@
   box-shadow: 0 0 0 1px #171819;
 }
 
+/* Generic full-glass composition; its consumer owns safe areas and scrolling. */
+.device-content-full { inset: 0; padding: 0; overflow: clip; }
+
 .device-button-action { top: 15%; height: 22px; }
 .device-button-volume-up { top: 23%; height: 46px; }
 .device-button-volume-down { top: 31%; height: 46px; }

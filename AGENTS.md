@@ -1,18 +1,20 @@
-﻿# Interactive AU Development Guidelines
+# Interactive AU Development Guidelines
 
 ## Project scope and current phase
 
 This project is a reading experience for **one alternate-universe story**, presented through a fictional phone simulation in the browser. It is not a SaaS product, an authoring platform, or a system for multiple stories.
 
-Phase 1 provides the project foundation. Phase 2 adds the responsive physical Device Shell. Phase 3 adds simulated lock/home screens and app placeholders. Phase 4 adds lower-region swipe unlock, OS motion, and visual refinement. Do not build real virtual app functionality, story runtime, persistence, or additional product features until the relevant phase is requested. The final story and virtual app list are undecided; clearly label all temporary content **PLACEHOLDER**.
+Phases 1–4 provide the foundation, Device Shell, OS simulation, and motion. Phase 4.1 adds a simulated passcode flow, a shared live WIB clock, original detailed icon artwork, and fullscreen demo windows. Do not start Phase 5 or build real virtual app functionality, story runtime, persistence, or unrelated product features. The final story and app list remain undecided. Identify demo content as **PLACEHOLDER** in source comments and developer documentation; do not show prototype labels in normal reader presentation.
 
 Primary technical decision document: [docs/architecture.md](docs/architecture.md).
 
 Device geometry, safe areas, responsive rules, and asset policy: [docs/design-system.md](docs/design-system.md). Keep the shell as Server Components without application state, and do not scale future interactive content with a universal transform.
 
-OS state belongs in `src/features/os`, never in the shell. Initial time/date must be deterministic; the current configuration intentionally uses a fixed placeholder clock without live time. Do not request camera, flashlight, network, battery, or OS permissions for simulated controls.
+OS state belongs in `src/features/os`, never in the shell. Initial time/date must be deterministic. One shared provider starts the live Asia/Jakarta clock only after hydration, schedules minute-boundary updates, refreshes on visibility, and cleans up timers/listeners. Do not request camera, flashlight, network, battery, or OS permissions for simulated controls.
 
-Motion must remain presentational: update navigation immediately, never gate it on animation callbacks. Exiting scenes must be inert and hidden from assistive technology. Keep a native unlock button and native scrolling outside the dedicated swipe surface. Use the hydration-safe reduced-motion hook for OS motion decisions.
+Motion must remain presentational: update navigation immediately, never gate it on animation callbacks. Exiting scenes must be inert and hidden from assistive technology. The swipe affordance is also a semantic button; never make gestures the only unlock path. Keep native scrolling outside that surface and use the hydration-safe reduced-motion hook.
+
+The configured four-digit PIN (default `1111`) is public storytelling simulation data, not a credential or security boundary. Digits belong only to the typed passcode view, never to persistence. Correct entry, cancel, and relock must discard them. Keep the Device Shell state-free; full-glass composition is generic, while OS scenes own fixed safe-area scroll viewports.
 
 ## Technology standards
 

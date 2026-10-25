@@ -5,7 +5,7 @@ import { motion, useIsPresent } from "motion/react";
 import { osSpring } from "./os-motion";
 import { useOsReducedMotion } from "./use-os-reduced-motion";
 
-type SceneKind = "lock" | "home" | "app";
+type SceneKind = "lock" | "passcode" | "home" | "app";
 
 export function OsScene({ kind, origin, returnFocusId, children }: Readonly<{
   kind: SceneKind;
@@ -46,7 +46,7 @@ export function OsScene({ kind, origin, returnFocusId, children }: Readonly<{
       animate={{ y: 0, scale: 1, opacity: 1 }}
       exit={reduced ? { opacity: 0 } : exit}
       transition={reduced ? { duration: 0 } : osSpring}>
-      {children}
+      <div className="os-scene-content">{children}</div>
     </motion.div>
   );
 }

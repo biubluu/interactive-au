@@ -1,23 +1,25 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
-import LandingPage from "../../src/app/page";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import Page from "../../src/app/page";
 import nextConfig from "../../next.config";
 
-describe("static foundation", () => {
-  it("server-renders a deterministic locked experience without browser APIs", () => {
-    const html = renderToStaticMarkup(<LandingPage />);
+afterEach(() => vi.restoreAllMocks());
 
-    expect(html).toContain("<main");
-    expect(html).toContain("PLACEHOLDER");
+describe("static foundation", () => {
+  it("server-renders deterministic clock fallback without reading the device time", () => {
+    vi.spyOn(Date, "now").mockImplementation(() => { throw new Error("No device clock during SSR"); });
+    const html = renderToStaticMarkup(<Page />);
     expect(html).toContain('data-testid="os-lock"');
-    expect(html).toContain("9:41");
-    expect(html).toContain("Sunday, October 25");
-    expect(html).toContain("Unlock");
+    expect(html).toContain("--:--");
+    expect(html).toContain("Enter passcode");
+    expect(html).not.toContain("PLACEHOLDER");
     expect(html).not.toContain("Enter Experience");
-    expect(renderToStaticMarkup(<LandingPage />)).toBe(html);
+    expect(renderToStaticMarkup(<Page />)).toBe(html);
   });
 
-  it("keeps production output compatible with static hosting", () => {
+  it("keeps static export and hides only the dev indicator", () => {
     expect(nextConfig.output).toBe("export");
+    expect(nextConfig.trailingSlash).toBe(true);
+    expect(nextConfig.devIndicators).toBe(false);
   });
 });

@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Interactive AU | Fictional Phone Experience",
-  description: "PLACEHOLDER: an interactive fictional phone with simulated lock and home screens.",
+  description: "An interactive fictional phone experience.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
