@@ -1,0 +1,168 @@
+.phone-shell {
+  --device-reference-width: 393;
+  --device-reference-height: 852;
+  --device-bezel: 9px;
+  --device-screen-radius: 49px;
+  --device-frame-radius: calc(var(--device-screen-radius) + var(--device-bezel));
+  --device-island-width: 31%;
+  --device-island-height: 35px;
+  --device-island-top: 12px;
+  --device-safe-top: 66px;
+  --device-safe-bottom: 28px;
+  --device-safe-inline: 24px;
+  --device-stage-space: 88px;
+  width: min(
+    calc(100vw - 64px),
+    calc((100svh - var(--device-stage-space) - 2 * var(--device-bezel)) * var(--device-reference-width) / var(--device-reference-height) + 2 * var(--device-bezel)),
+    411px
+  );
+  width: min(
+    calc(100vw - 64px),
+    calc((100dvh - var(--device-stage-space) - 2 * var(--device-bezel)) * var(--device-reference-width) / var(--device-reference-height) + 2 * var(--device-bezel)),
+    411px
+  );
+  flex: none;
+  isolation: isolate;
+}
+
+.device-frame {
+  position: relative;
+  padding: var(--device-bezel);
+  border-radius: var(--device-frame-radius);
+  background: linear-gradient(115deg, #858789 0%, #343537 14%, #111214 42%, #4e5053 76%, #1c1d1f 100%);
+  box-shadow:
+    inset 0 0 0 1px #b5b7b89c,
+    inset 0 0 0 3px #222325,
+    inset 0 0 0 4px #6b6d705c,
+    0 1px 2px #0009,
+    0 16px 32px -12px #0006,
+    0 40px 70px -30px #0008;
+}
+
+.device-screen {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--device-reference-width) / var(--device-reference-height);
+  overflow: clip;
+  /* Clip all descendants, including positioned elements and scrolling content. */
+  clip-path: inset(0 round var(--device-screen-radius));
+  border-radius: var(--device-screen-radius);
+  background: #16141e;
+  isolation: isolate;
+  box-shadow: 0 0 0 2px #08090a;
+  container-type: inline-size;
+}
+
+.device-wallpaper {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 78% 2%, #eec7bb 0%, #cd9aa9 23%, transparent 52%),
+    radial-gradient(ellipse at 0% 44%, #d4b4e8 0%, #7f76ac 25%, transparent 58%),
+    linear-gradient(165deg, #8975a2 0%, #443758 48%, #141826 80%);
+}
+
+.device-wallpaper::before {
+  content: "";
+  position: absolute;
+  width: 160%;
+  height: 80%;
+  left: 16%;
+  top: 18%;
+  border-radius: 50%;
+  rotate: -32deg;
+  background: linear-gradient(115deg, #f7c9be 3%, #ad89b3 22%, #4c4569 42%, #1a2035 63%);
+  box-shadow: -12px -3px 40px #e1b5cc4d, inset 3px 4px 10px #ffe3d45c;
+}
+
+.device-wallpaper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 25%, #10121e40 45%, #0d102480 65%, #080b1680);
+}
+
+.phone-shell[data-wallpaper="midnight"] .device-wallpaper {
+  filter: hue-rotate(40deg) saturate(0.6) brightness(0.65);
+}
+
+.dynamic-island {
+  position: absolute;
+  z-index: 2;
+  top: var(--device-island-top);
+  left: 50%;
+  translate: -50% 0;
+  width: var(--device-island-width);
+  height: var(--device-island-height);
+  border-radius: 999px;
+  background: #050506;
+  box-shadow: inset 0 0 0 1px #000, 0 1px 1px #ffffff0a;
+  pointer-events: none;
+}
+
+.device-camera {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  right: 12px;
+  top: 50%;
+  translate: 0 -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #26334a 0%, #101521 30%, #06080d 55%);
+  box-shadow: 0 0 0 3px #0b0b0e, inset 0 0 2px #64769152;
+}
+
+.device-content {
+  position: absolute;
+  inset: var(--device-safe-top) 0 var(--device-safe-bottom);
+  z-index: 1;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #ffffff50 transparent;
+  padding-inline: var(--device-safe-inline);
+  scroll-padding-block: 8px;
+}
+
+.device-button {
+  position: absolute;
+  z-index: -1;
+  width: 4px;
+  left: -3px;
+  border-radius: 3px 0 0 3px;
+  background: linear-gradient(90deg, #37383a, #939599 50%, #343537);
+  box-shadow: 0 0 0 1px #171819;
+}
+
+.device-button-action { top: 15%; height: 22px; }
+.device-button-volume-up { top: 23%; height: 46px; }
+.device-button-volume-down { top: 31%; height: 46px; }
+.device-button-power {
+  left: auto;
+  right: -3px;
+  top: 26%;
+  height: 70px;
+  border-radius: 0 3px 3px 0;
+}
+
+@media (max-width: 599px), (max-height: 540px) {
+  .phone-shell {
+    --device-bezel: 5px;
+    --device-screen-radius: 39px;
+    --device-safe-inline: clamp(16px, 5vw, 24px);
+    width: min(calc(100% - 12px), 440px);
+  }
+
+  .device-frame {
+    box-shadow: inset 0 0 0 1px #9fa0a3, inset 0 0 0 3px #222325, 0 8px 24px #0003;
+  }
+
+  .device-screen {
+    aspect-ratio: auto;
+    height: calc(100svh - 12px - 2 * var(--device-bezel));
+    height: calc(100dvh - 12px - 2 * var(--device-bezel));
+  }
+
+  .device-hardware { display: none; }
+}

@@ -4,9 +4,11 @@
 
 This project is a reading experience for **one alternate-universe story**, presented through a fictional phone simulation in the browser. It is not a SaaS product, an authoring platform, or a system for multiple stories.
 
-Phase 1 covers the project foundation: tool configuration, static export, CI, and an accessible landing placeholder. Do not build the iPhone frame, lock screen, home screen, virtual apps, story runtime, or persistence until the relevant phase is requested. The final story and virtual app list are undecided; clearly label all temporary content **PLACEHOLDER**.
+Phase 1 provides the project foundation. Phase 2 adds the responsive physical Device Shell and its placeholder demonstration. Do not build the lock screen, home screen, OS navigation, virtual apps, story runtime, or persistence until the relevant phase is requested. The final story and virtual app list are undecided; clearly label all temporary content **PLACEHOLDER**.
 
 Primary technical decision document: [docs/architecture.md](docs/architecture.md).
+
+Device geometry, safe areas, responsive rules, and asset policy: [docs/design-system.md](docs/design-system.md). Keep the shell as Server Components without application state, and do not scale future interactive content with a universal transform.
 
 ## Technology standards
 

@@ -1,6 +1,6 @@
 ﻿# Interactive AU Architecture
 
-Status: Phase 1 project foundation. The five boundaries remain authoritative; only the App Router entry and foundation tooling are implemented. The broader source structure below remains planned.
+Status: Phase 2 Device Shell built on the Phase 1 foundation. The five boundaries remain authoritative; only the App Router entry, physical Device Shell, and foundation tooling are implemented. OS, apps, runtime, and persistence remain planned.
 
 ## Product goals and boundaries
 
@@ -106,7 +106,7 @@ Tests follow implemented behavior. Do not create tests for speculative UI or fea
 
 ## Phase 1 decisions and status
 
-- The only application directory is `src/app`. Unimplemented layers have no empty folders, stores, schemas, registry, or runtime abstractions.
+- Phase 1 introduced only `src/app`. Unimplemented layers have no empty folders, stores, schemas, registry, or runtime abstractions.
 - The landing page and layout are Server Components rendered at build time. The native `Enter Experience` anchor targets a focusable, clearly labeled placeholder notice on the same page. It does not start a story or persist state.
 - Tailwind is configured through its PostCSS integration. The page uses local system fonts, no external assets, and no animations, so reduced motion requires no client-side behavior in this phase.
 - Motion, Zustand, and Zod are installed for their documented future responsibilities. They are intentionally unused until those responsibilities are implemented.
@@ -115,6 +115,15 @@ Tests follow implemented behavior. Do not create tests for speculative UI or fea
 - Vitest runs foundation unit tests in Node without a simulated browser. Playwright tests the actual static export in desktop and mobile Chromium, including keyboard navigation and reduced motion. No speculative story tests are added.
 - GitHub Actions runs lint, type checking, unit tests, production build, and static artifact checks. The workflow assumes `interactive-au` is the repository root. E2E remains an explicit local command in this phase.
 
-Phase 2 is not started automatically. The next requested phase can build on this foundation; the story and app list remain open product decisions, and placeholder content must not be treated as final decisions.
+## Phase 2 decisions
+
+- `src/components/device/phone-shell.tsx` provides a Server Component that composes children inside decorative chassis, glass, and a private Dynamic Island component. Frame and screen markup remain internal rather than becoming unnecessary component APIs.
+- The shell has no state and imports no OS, story, app registry, or persistence modules. The landing page owns all placeholder content and retains the Phase 1 anchor/focus contract.
+- CSS tokens define device geometry. Framed presentation preserves the 393x852 glass ratio; compact presentation adapts glass height to the dynamic viewport and scrolls content without scaling fonts or controls. The glass clips without becoming a scroll container, keeping hardware fixed while content scrolls.
+- [design-system.md](design-system.md) records geometry, virtual safe areas, wallpaper options, responsive rules, and visual decisions. There are no external images, fonts, phone mockup packages, or runtime graphics dependencies.
+- React Hooks linting uses stable `eslint-plugin-react-hooks` 7.1.1, whose peer range supports ESLint 10. The incompatible JSX accessibility plugin is not forced into the dependency graph; `@axe-core/playwright` adds actual rendered-page accessibility checks in light/dark surroundings, alongside keyboard tests. These are browser checks, not accessibility lint rules or a complete manual audit.
+- Existing scripts and CI remain unchanged. Additional E2E tests cover requested viewports, landscape, rounded clipping, focus reachability, and enlarged-text reflow, and generate local screenshots. No OS state or speculative story tests are added.
+
+The story and app list remain open product decisions. Phase 3 must be requested separately; it is not started automatically.
 
 Project documentation is written in English. User-facing progress updates and completion reports are written in Indonesian.

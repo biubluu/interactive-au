@@ -1,6 +1,6 @@
 # Interactive AU
 
-Phase 1 foundation for a single alternate-universe story, presented through a fictional phone simulation in the browser. The current page is explicitly **PLACEHOLDER** content. The phone UI, virtual apps, story runtime, and persistence are not implemented.
+Phase 2 physical Device Shell on the Phase 1 foundation for a single alternate-universe story. The current page is explicitly **PLACEHOLDER** content. The lock screen, home screen, OS navigation, virtual apps, story runtime, and persistence are not implemented.
 
 Read [AGENTS.md](AGENTS.md) and [docs/architecture.md](docs/architecture.md) before making changes. Project documentation is in English; reports to the user are in Indonesian.
 
@@ -42,7 +42,9 @@ npm run build
 npm run test:e2e
 ```
 
-Playwright starts and stops the static preview server automatically. Port 3000 must be free. Tests run against desktop and mobile Chromium, exercising keyboard entry, placeholder navigation, reload, viewport fit, and reduced motion. Browser downloads require network access. Additional browser engines are outside this phase.
+Playwright starts and stops the static preview server automatically. Port 3000 must be free. Tests run against desktop and mobile Chromium, exercising keyboard entry, placeholder navigation, reload, viewport fit, reduced motion, device clipping, and axe accessibility checks. Browser downloads require network access. Additional browser engines are outside this phase.
+
+The viewport matrix runs once in the desktop project; eight duplicate matrix cases are intentionally skipped in the mobile project. Screenshots for mobile, tablet, desktop, landscape, dark surroundings, and enlarged text are generated in `artifacts/phase-2/` (ignored by Git). See [docs/design-system.md](docs/design-system.md) for geometry, screenshot names, and zoom-test limitations. On restricted Windows environments, browser testing may require permission to launch and terminate the preview process.
 
 ## Continuous integration
 
@@ -52,4 +54,4 @@ The workflow assumes this `interactive-au/` directory is the Git repository root
 
 ## Scope
 
-Only `src/app` is needed now. The five architectural layers remain documented boundaries; implementation folders are added when their phase is requested. Motion, Zustand, and Zod are installed but deliberately unused in this phase. No device UI or story logic is implied by the landing page.
+Only `src/app` and `src/components/device` are needed now. The five architectural layers remain documented boundaries; other implementation folders are added when their phase is requested. Motion, Zustand, and Zod are installed but deliberately unused in this phase. The physical shell uses Server Components, CSS-generated wallpaper, and normal-size scrolling content without app state. Its public composition entry is `PhoneShell`, with `children` and optional `wallpaper="aurora" | "midnight"` props. No OS or story behavior is implied by the landing page.
