@@ -1,6 +1,6 @@
 # Interactive AU Architecture
 
-Status: Phase 4.1 passcode flow, live WIB clock, fullscreen demo windows, and visual refinement. The five boundaries remain authoritative. Phase 5, real virtual app functionality, story runtime, and persistence remain unimplemented. Phase 4.1 decisions supersede earlier fixed-clock, visible-placeholder, and content-scrolling details retained below as phase history.
+Status: Phase 4.2 Lock Screen visual refinement and independent wallpaper choices, with the user-requested PIN changed to 0411. The five boundaries remain authoritative. Phase 5, real virtual app functionality, story runtime, and persistence remain unimplemented. The latest phase decisions supersede older presentation/default-value details retained below as history.
 
 ## Product goals and boundaries
 
@@ -157,6 +157,16 @@ Tests follow implemented behavior. Do not create tests for speculative UI or fea
 - Visible prototype labels and verbose shortcut notices are removed. Shortcut buttons provide visual pressed-state feedback and names explicitly identifying visual-only controls. The swipe affordance is the accessible native button; drag-distance tracking prevents an incomplete drag from becoming a click. App names and reader-facing demo emptiness remain simple; source comments and developer docs identify them as placeholders.
 - `devIndicators: false` hides the Next.js development indicator using the supported configuration while keeping export/trailing-slash settings and diagnostics. It does not disable build/runtime errors. See the [official devIndicators reference](https://nextjs.org/docs/app/api-reference/config/next-config-js/devIndicators).
 - Existing motion, inert exits, reduced-motion hydration policy, native scrolling, icon origins, and focus contracts are retained. Tests explicitly depending on old clock text, a separate Unlock button, or visible PLACEHOLDER labels are updated. Static-export E2E captures lock/passcode/home/fullscreen-app screenshots under `artifacts/phase-4.1/`.
+
+## Phase 4.2 decisions
+
+- Lock Screen visuals now use a heavy system clock, abbreviated WIB date, configurable clock/date colors, glass shortcut surfaces, and an empty but focusable swipe button. No gesture thresholds, spring logic, passcode validation algorithm, clock scheduler, Home icon layout, or fullscreen app behavior is changed.
+- Wallpaper is OS presentation state derived directly from the existing navigation view, not separate navigation state. `lockScreen.wallpaper` applies to Lock/passcode; `homeWallpaper` applies independently to Home. `OsWallpaper` paints behind status chrome and the island using the full-glass composition already established in Phase 4.1. The Device Shell remains state-free and imports no OS module; its CSS fallback identifies its own variant explicitly so one wallpaper choice cannot filter another.
+- Each wallpaper choice specifies an optional local image, CSS fallback (`aurora` or `midnight`), and object position. The default Lock image is `/wallpapers/lock-screen.jpg`. The user-supplied workspace photograph, initially located at `public/wallpaper/lock-screen.jpg`, is now served unmodified from the requested plural directory. No unrelated image is fetched or generated.
+- Images use Next Image with `fill`, `object-fit: cover`, configurable position, preload, asynchronous decoding, and `unoptimized` for static-export compatibility. Absolute positioning avoids layout shifts. If an image fails, the image layer is removed and the existing CSS artwork remains visible. Home can remain CSS-only. No runtime image optimization API, external asset host, or new dependency is introduced.
+- The Lock Screen heavy scrim is removed; restrained text shadows support contrast without obscuring the photo. The date formatter alone changes to short weekday/day/month; the shared WIB scheduler and hydration fallback remain intact. Screenshot comparison follows the written brief because no separate reference screenshot was attached.
+- Per user instruction, `DEFAULT_SIMULATION_PIN` is now `0411`. The presentation config references that constant rather than overriding it with an outdated literal. PIN tests and current developer documentation follow the configured value, preserving its leading zero. This remains public story simulation, not authentication.
+- Tests retain existing gesture, passcode, clock, focus, reduced-motion, and clipping coverage and add local-image bounds/cropping, CSS fallback on image failure, absence of visible instructions, shortcut symmetry, keyboard activation, and all 24 hour combinations on a narrow screen with enlarged text. Screenshots are generated under `artifacts/phase-4.2/`.
 
 The story and final app list remain open product decisions. Phase 5 must be requested separately; it is not started automatically.
 

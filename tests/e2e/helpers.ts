@@ -1,8 +1,11 @@
 import { expect, type Page } from "@playwright/test";
+import { experienceConfig } from "../../src/features/os/experience-config";
+
+export const simulationPin = experienceConfig.simulationPin;
 
 export async function enterPasscode(page: Page) {
   await expect(page.getByTestId("os-passcode")).toBeVisible();
-  for (let index = 0; index < 4; index += 1) await page.getByRole("button", { name: "1", exact: true }).click();
+  for (const digit of simulationPin) await page.getByRole("button", { name: digit, exact: true }).click();
   await expect(page.getByRole("heading", { name: "Home Screen", exact: true })).toBeFocused();
 }
 

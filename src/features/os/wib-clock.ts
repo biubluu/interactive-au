@@ -3,15 +3,17 @@ export type WibClock = Readonly<{ time: string; date: string; dateKey: string; d
 // Identical markup on the server and during hydration; no device clock is read here.
 export const initialWibClock: WibClock = { time: "--:--", date: "WIB", dateKey: "" };
 const timeFormat = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
-const dateFormat = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Jakarta", weekday: "long", month: "long", day: "numeric" });
+const dateFormat = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Jakarta", weekday: "short", month: "short", day: "numeric" });
 const keyFormat = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta", year: "numeric", month: "2-digit", day: "2-digit" });
 
 export function formatWibClock(epoch: number): WibClock {
   const parts = keyFormat.formatToParts(epoch);
   const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
+  const dateParts = dateFormat.formatToParts(epoch);
+  const date = ["weekday", "day", "month"].map((type) => dateParts.find((item) => item.type === type)?.value ?? "").join(" ");
   return {
     time: timeFormat.format(epoch),
-    date: dateFormat.format(epoch),
+    date,
     dateKey: `${part("year")}-${part("month")}-${part("day")}`,
     dateTime: new Date(epoch).toISOString(),
   };

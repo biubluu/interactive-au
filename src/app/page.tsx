@@ -8,7 +8,7 @@ export default function Page() {
   return (
     <main className="device-stage">
       <WibClockProvider>
-        <PhoneShell contentPresentation="full" wallpaper={experienceConfig.wallpaper} overlay={<DeviceChrome />}>
+        <PhoneShell contentPresentation="full" wallpaper={experienceConfig.homeWallpaper.fallback} overlay={<DeviceChrome />}>
           <OsExperience config={experienceConfig} />
         </PhoneShell>
       </WibClockProvider>

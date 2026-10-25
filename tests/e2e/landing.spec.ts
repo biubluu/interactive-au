@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { openHome } from "./helpers";
+import { openHome, simulationPin } from "./helpers";
 
 test("keyboard unlock passes through PIN entry, preserves focus, and resets on reload", async ({ page }) => {
   const errors: string[] = [];
@@ -17,7 +17,7 @@ test("keyboard unlock passes through PIN entry, preserves focus, and resets on r
   await expect(page.getByRole("button", { name: "Enter passcode", exact: true })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("heading", { name: "Enter Passcode", exact: true })).toBeFocused();
-  await page.keyboard.type("1111");
+  await page.keyboard.type(simulationPin);
   await expect(page.getByRole("heading", { name: "Home Screen" })).toBeFocused();
   const notes = page.getByRole("button", { name: "Open Notes", exact: true });
   await notes.click();

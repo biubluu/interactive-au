@@ -1,7 +1,7 @@
 import { createStore } from "zustand/vanilla";
 
 // Story simulation only. This is public client code, not an authentication boundary.
-export const DEFAULT_SIMULATION_PIN = "1111";
+export const DEFAULT_SIMULATION_PIN = "0411";
 export type OsView = { kind: "lock" } | { kind: "passcode"; digits: string; error: boolean } | { kind: "home" } | { kind: "app"; appId: string };
 type OsState = {
   view: OsView;

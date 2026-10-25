@@ -4,7 +4,7 @@
 
 This project is a reading experience for **one alternate-universe story**, presented through a fictional phone simulation in the browser. It is not a SaaS product, an authoring platform, or a system for multiple stories.
 
-Phases 1–4 provide the foundation, Device Shell, OS simulation, and motion. Phase 4.1 adds a simulated passcode flow, a shared live WIB clock, original detailed icon artwork, and fullscreen demo windows. Do not start Phase 5 or build real virtual app functionality, story runtime, persistence, or unrelated product features. The final story and app list remain undecided. Identify demo content as **PLACEHOLDER** in source comments and developer documentation; do not show prototype labels in normal reader presentation.
+Phases 1–4.1 provide the foundation, Device Shell, OS motion, passcode, live WIB clock, and fullscreen demos. Phase 4.2 refines only Lock Screen visuals, independent wallpapers, and the invisible accessible gesture surface. Do not start Phase 5 or build real virtual app functionality, story runtime, persistence, or unrelated product features. The final story and app list remain undecided. Identify demo content as **PLACEHOLDER** in source comments and developer documentation; do not show prototype labels in normal reader presentation.
 
 Primary technical decision document: [docs/architecture.md](docs/architecture.md).
 
@@ -14,7 +14,9 @@ OS state belongs in `src/features/os`, never in the shell. Initial time/date mus
 
 Motion must remain presentational: update navigation immediately, never gate it on animation callbacks. Exiting scenes must be inert and hidden from assistive technology. The swipe affordance is also a semantic button; never make gestures the only unlock path. Keep native scrolling outside that surface and use the hydration-safe reduced-motion hook.
 
-The configured four-digit PIN (default `1111`) is public storytelling simulation data, not a credential or security boundary. Digits belong only to the typed passcode view, never to persistence. Correct entry, cancel, and relock must discard them. Keep the Device Shell state-free; full-glass composition is generic, while OS scenes own fixed safe-area scroll viewports.
+The configured four-digit PIN (default `0411`, including its leading zero) is public storytelling simulation data, not a credential or security boundary. Presentation configuration uses the same default constant as the store. Digits belong only to the typed passcode view, never to persistence. Correct entry, cancel, and relock must discard them. Keep the Device Shell state-free; full-glass composition is generic, while OS scenes own fixed safe-area scroll viewports.
+
+Lock and Home wallpaper choices are independent local presentation configuration. Keep CSS fallbacks, cover cropping, adjustable positioning, and rounded clipping. Never replace a missing user image with unrelated imagery. The Lock Screen swipe button has an accessible name and visible keyboard focus but no visible instruction or arrow.
 
 ## Technology standards
 

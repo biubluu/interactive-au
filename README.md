@@ -1,6 +1,6 @@
 # Interactive AU
 
-Phase 4.1 adds an iOS-inspired passcode flow, a shared live WIB clock, detailed original app artwork, and fullscreen demo windows. The experience opens locked. Swipe upward or activate the swipe affordance to enter the four-digit passcode, then explore Home and return from demo windows. Real virtual apps, story runtime, persistence, and Phase 5 are not implemented.
+Phase 4.2 refines the Lock Screen with a local photo wallpaper, heavy system clock, abbreviated WIB date, glass-style shortcuts, and an invisible accessible swipe region. The existing passcode flow, live clock, Home layout, and fullscreen demos remain intact. Real virtual apps, story runtime, persistence, and Phase 5 are not implemented.
 
 Read [AGENTS.md](AGENTS.md) and [docs/architecture.md](docs/architecture.md) before making changes. Project documentation is in English; reports to the user are in Indonesian.
 
@@ -44,7 +44,7 @@ npm run test:e2e
 
 Playwright starts and stops the static preview server automatically on port 4173, keeping the default development server on port 3000 separate. Port 4173 must be free. Tests run against desktop and mobile Chromium, exercising passcode correctness/error/deletion/cancel/relock, physical keyboard input, fullscreen app layout, WIB midnight/visibility updates, hydration diagnostics, focus restoration, shortcuts, viewport fit, reduced motion, physical clipping, and axe checks. Browser downloads require network access. Additional browser engines are outside this phase.
 
-The viewport matrix runs once in the desktop project; eight duplicate matrix cases are intentionally skipped in the mobile project. The CDP touch test runs only in mobile Chromium, so one desktop copy is also intentionally skipped. Current lock/passcode/home/fullscreen-app screenshots are generated in `artifacts/phase-4.1/` (ignored by Git), including mobile, tablet, desktop, landscape, dark surroundings, and enlarged text. Screenshot tests fix the device time at 09:41 WIB; production uses live device time. Gesture, rapid navigation, press feedback, and reduced-motion regressions remain covered. See [docs/design-system.md](docs/design-system.md) for geometry, motion, screenshot naming, and zoom-test limitations.
+The viewport matrix runs once in the desktop project; eight duplicate matrix cases are intentionally skipped in the mobile project. The CDP touch test runs only in mobile Chromium, so one desktop copy is also intentionally skipped. Current screenshots are generated in `artifacts/phase-4.2/` (ignored by Git), including explicit Lock photo review at 393x852, 430x932, and 1366x768. Tests fix time at 09:41 WIB only for screenshots; production uses live device time. Gesture, rapid navigation, reduced motion, cropping/fallback, and all-hour narrow clock regressions are covered. See [docs/design-system.md](docs/design-system.md) for details and review limitations.
 
 ## Continuous integration
 
@@ -60,10 +60,12 @@ The physical shell remains a Server Component with `children`, optional `wallpap
 
 ## Presentation configuration
 
-Edit `src/features/os/experience-config.ts` to change `simulationPin`, wallpaper variant, and demo icon metadata/order. Grid entries use `placement: "grid"`; the four dock entries use `placement: "dock"`. Keep IDs unique and names meaningful. Artwork is selected by the typed `icon` field and maintained locally in `app-artwork.tsx`. This is display configuration, not the final story's app registry. Demo status is documented in source/docs without prototype banners in normal reader UI.
+Edit `src/features/os/experience-config.ts` to configure `lockScreen.wallpaper`, `homeWallpaper`, `lockScreen.clockColor`, and `lockScreen.dateColor`. Each wallpaper has an optional local `image`, an adjustable `position` (default `50% 50%`), and a CSS `fallback` (`aurora` or `midnight`). The default Lock image is `public/wallpapers/lock-screen.jpg`, using the unmodified user-supplied photograph. Missing images reveal CSS artwork; no unrelated image is substituted. Remove `image` to use CSS only. Lock/passcode and Home choices are independent.
 
-The default PIN is **1111**. It is public storytelling simulation data, **not authentication or a security boundary**. Entered digits are masked by circles and exist only in the passcode view. Correct entry, cancel, and relock discard them; nothing is persisted. Physical number keys, Backspace/Delete, Escape, and the visible keypad are supported.
+Demo icon metadata/order remains configurable with grid/dock placement and typed artwork names. This is display configuration, not the final story's app registry. Demo status remains in source/docs without prototype banners in reader UI.
+
+The PIN is **0411**, including the leading zero, per the user's update. Presentation configuration now references the store's `DEFAULT_SIMULATION_PIN` constant. It is public storytelling simulation data, **not authentication or a security boundary**. Entered digits are masked and transient; success, cancel, and relock discard them. Keypad behavior is unchanged.
 
 Clock time comes from the browser device clock, formatted in `Asia/Jakarta` with 24-hour HH:mm. SSR/hydration use a stable fallback, then one shared provider starts minute-boundary updates and refreshes on visibility. No external time API is used. Incorrect device clocks remain possible.
 
-Swipe is optional and restricted to the lower affordance, which is also the keyboard/click unlock action. Scrolling elsewhere remains native. Reduced motion removes large transforms while preserving input. Motion constants remain in `src/features/os/os-motion.ts`. The Next.js development indicator is disabled through `devIndicators: false`; diagnostics remain enabled. Phase 5 requires a separate request.
+Swipe is optional and restricted to the visually empty lower region, which is also the focusable keyboard/click action named Enter passcode. There is no visible arrow or unlock instruction. Scrolling elsewhere remains native. Reduced motion and motion constants are unchanged. The Next.js development indicator remains disabled; diagnostics remain enabled. Phase 5 requires a separate request.

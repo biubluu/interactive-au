@@ -12,6 +12,7 @@ import { osSpring } from "./os-motion";
 import { useOsReducedMotion } from "./use-os-reduced-motion";
 import { PasscodeScreen } from "./passcode-screen";
 import { AppArtwork } from "./app-artwork";
+import { OsWallpaper } from "./os-wallpaper";
 import "./os.css";
 
 export function OsExperience({ config }: Readonly<{ config: ExperienceConfig }>) {
@@ -21,6 +22,7 @@ export function OsExperience({ config }: Readonly<{ config: ExperienceConfig }>)
   const [launch, setLaunch] = useState<{ appId: string; origin: string } | null>(null);
   const [hasNavigated, setHasNavigated] = useState(false);
   const selectedApp = view.kind === "app" ? config.apps.find((app) => app.id === view.appId) : undefined;
+  const wallpaper = view.kind === "lock" || view.kind === "passcode" ? config.lockScreen.wallpaper : config.homeWallpaper;
 
   function unlock() {
     if (store.getState().view.kind !== "lock") return;
@@ -57,9 +59,10 @@ export function OsExperience({ config }: Readonly<{ config: ExperienceConfig }>)
   return (
     <MotionConfig reducedMotion={reduced ? "always" : "never"}>
       <div className="os-scenes" data-has-navigated={hasNavigated}>
+        <OsWallpaper key={`${wallpaper.image ?? "css"}:${wallpaper.fallback}`} choice={wallpaper} />
         <AnimatePresence initial={false} mode="sync">
           <OsScene key={view.kind} kind={view.kind} origin={launch?.origin} returnFocusId={view.kind === "home" ? launch?.appId : undefined}>
-            {view.kind === "lock" && <LockScreen onUnlock={unlock} />}
+            {view.kind === "lock" && <LockScreen onUnlock={unlock} clockColor={config.lockScreen.clockColor} dateColor={config.lockScreen.dateColor} />}
             {view.kind === "passcode" && <PasscodeScreen digits={view.digits} error={view.error}
               onDigit={store.getState().enterDigit} onDelete={store.getState().deleteDigit} onCancel={store.getState().lock} />}
             {view.kind === "home" && <>

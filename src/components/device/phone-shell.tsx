@@ -20,7 +20,7 @@ export function PhoneShell({ children, wallpaper = "aurora", overlay, contentPre
           <span className="device-button device-button-power" />
         </div>
         <div className="device-screen" data-testid="device-screen">
-          <div className="device-wallpaper" aria-hidden="true" />
+          <div className="device-wallpaper" data-wallpaper={wallpaper} aria-hidden="true" />
           <DynamicIsland />
           {overlay}
           <div className={`device-content${contentPresentation === "full" ? " device-content-full" : ""}`} data-testid="device-content">{children}</div>

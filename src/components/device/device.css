@@ -83,7 +83,7 @@
   background: linear-gradient(180deg, transparent 25%, #10121e40 45%, #0d102480 65%, #080b1680);
 }
 
-.phone-shell[data-wallpaper="midnight"] .device-wallpaper {
+.device-wallpaper[data-wallpaper="midnight"] {
   filter: hue-rotate(40deg) saturate(0.6) brightness(0.65);
 }
 

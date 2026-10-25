@@ -1,6 +1,6 @@
 # Device Shell and OS Design System
 
-Status: Phase 4.1. Physical geometry is retained from Phase 2. This is a fictional browser-rendered device, not real iOS or native hardware.
+Status: Phase 4.2 Lock Screen refinement. Physical geometry is retained from Phase 2; passcode, scheduler, Home layout, and fullscreen apps retain Phase 4.1 behavior. This is a fictional browser-rendered device, not real iOS or native hardware.
 
 ## Device geometry
 
@@ -48,17 +48,42 @@ The glass retains `overflow: clip` and a rounded `clip-path`, so neither focus r
 
 The platform font stack is `-apple-system, BlinkMacSystemFont, system-ui, sans-serif`. Apple devices can use their native font naturally. No Apple font files are bundled, downloaded, or redistributed.
 
-The wallpaper is original CSS artwork with rose/lavender ellipses, dark blue depth, and a lower scrim. `wallpaper="midnight"` adjusts its hue/saturation/brightness. It stays consistent across lock, passcode, and Home. App windows replace it with their own full-glass background.
+The original CSS wallpaper remains available as `aurora` (rose/lavender ellipses and dark blue depth) or `midnight` (a hue/saturation/brightness variant). Each layer identifies its own fallback variant so a Home choice cannot alter the Lock image. App windows retain their opaque full-glass background.
+
+Configure independent wallpaper choices in `src/features/os/experience-config.ts`:
+
+```ts
+lockScreen: {
+  wallpaper: {
+    image: "/wallpapers/lock-screen.jpg",
+    position: "50% 50%",
+    fallback: "aurora",
+  },
+  clockColor: "#ffffff",
+  dateColor: "#ffffff",
+},
+homeWallpaper: { position: "50% 50%", fallback: "aurora" },
+```
+
+The image belongs at `public/wallpapers/lock-screen.jpg`. The current photograph is user-supplied; it was copied unmodified from the initially supplied `public/wallpaper/lock-screen.jpg` and is now stored at the requested plural path. No replacement image was sourced. Set a different local `image` path or omit it to use only CSS. `position` accepts normal CSS object-position values such as `50% 35%` to tune the crop. Home may independently specify a local image, position, and CSS fallback. Passcode follows the Lock wallpaper.
+
+The decorative image fills the entire glass, including behind status chrome and the island. It uses cover rendering, never stretching, with physical rounded clipping unchanged. Next Image uses `fill`, preload, async decoding, and static-compatible `unoptimized` rendering. The supplied JPEG is approximately 221 KiB; no larger generated asset or external request is introduced. Absolute positioning reserves no layout space, and CSS remains beneath the image while it loads. An image error removes the failed image and exposes only the configured CSS artwork.
 
 `src/features/os/app-artwork.tsx` contains original local SVG app illustrations: layered paper/calendar, a colorful photo mosaic, a metallic camera/lens, a road map, filled music/phone/message symbols, a shaded folder, a gear assembly, an envelope, and a compass. CSS controls rounded-square clipping, highlights, and shadows. Typed metadata selects artwork and base colors. Illustrative calendar markings are artwork, not a functional calendar app.
 
-`os-icons.tsx` retains small line symbols for OS controls only. No Apple artwork, third-party phone mockup, external font, image request, or graphics engine is used. Any future third-party asset needs a documented source and appropriate license before use.
+`os-icons.tsx` retains small line symbols for OS controls only. No Apple artwork, third-party phone mockup, external font, remote image request, or graphics engine is used. Any future third-party asset needs a documented source and appropriate license before use.
 
 The stage follows light/dark color preference, while the simulated glass has a consistent palette. Normal reader presentation contains no PLACEHOLDER banners, repeated prototype subtitles, or verbose simulated-action notices. Demo/placeholder status remains explicit in source comments and developer documentation.
 
 ## Lock Screen and shortcuts
 
-Clock and date remain prominent, with system typography and container-aware clock sizing. Flashlight and camera-style circles stay at lower left/right. A single centered semantic button beneath them displays the swipe affordance; there is no separate visible Unlock button. Its accessible name is **Enter passcode**.
+The Lock clock uses system weight 850 (within the 800–900 target), centered tabular numerals, restrained negative tracking, and container-aware sizing. A container-width cap keeps all HH:mm combinations on one line on small/enlarged-text screens. No proprietary font file is bundled. The date is abbreviated as **Sun 25 Oct** using the same WIB clock source. The small lock symbol is removed and date/clock spacing is reduced.
+
+Clock and date colors are independent configuration values, both white by default. A restrained two-layer text shadow supports contrast on bright areas; the former full-screen Lock scrim is removed so the photograph remains visible. Review contrast for each chosen image/crop and select darker configured text when needed. No separate reference screenshot was attached for this phase, so proportions follow the written brief.
+
+Flashlight and camera-style circles remain 52px, symmetrically positioned at the lower corners. Idle surfaces have a semi-transparent tint, fine translucent border, internal highlights, and a soft contact shadow. Blur (12px) and saturation (1.25) are enabled only inside a backdrop-filter support query, including the WebKit property. Without support, a readable tinted circular surface remains. Blur is static, not animated; press feedback and visual-only toggles retain existing behavior.
+
+The lower semantic swipe button is visually empty: no arrow, instruction, or redundant Unlock label. It retains a minimum 56px height, accessible name **Enter passcode**, and a visible keyboard focus outline. It is the same pointer/touch drag region and click/Enter/Space alternative, not a separate visible control.
 
 The affordance supports touch/mouse drag as well as click, Enter, and Space. A completed swipe opens passcode entry rather than Home. Shortcut buttons only toggle visual pressed states; their accessible names identify them as visual-only controls. They request no hardware APIs or permissions and display no verbose notices.
 
@@ -68,7 +93,7 @@ The home indicator is a decorative 5px bottom pill. It is not itself a native ge
 
 Navigation is `LOCK -> PASSCODE -> HOME -> APP`. Cancel/Escape returns to Lock. Relock also returns to Lock.
 
-The configured PIN is exactly **1111** by default, editable through `simulationPin` in `experience-config.ts`. This publicly shipped value is a storytelling mechanic, **not a security boundary**, credential, real authentication, encryption, account, or protected session.
+The configured PIN is **0411**, including its leading zero, per the user's update. `simulationPin` references `DEFAULT_SIMULATION_PIN` in `os-store.ts` by default, eliminating conflicting literals. This publicly shipped value is a storytelling mechanic, **not a security boundary**, credential, real authentication, encryption, account, or protected session. The validation algorithm and keypad behavior are unchanged.
 
 Four circles show entered length without rendering the entered digits; a polite live region announces only the digit count. The large numeric keypad supports touch, mouse, physical number keys, Backspace/Delete, and Cancel/Escape. Correct four-digit entry opens Home immediately. Incorrect entry clears the circles and provides restrained error text/announcement plus a small shake; reduced motion removes the shake. Cancel, success, and relock remove digits from typed navigation state. Nothing is persisted.
 
@@ -78,7 +103,7 @@ Focus moves to the passcode heading on entry, to the accessible Home heading aft
 
 `WibClockProvider` supplies the same clock value to Lock Screen and status chrome. Server rendering and hydration use the deterministic `--:--` / WIB fallback and do not read the device time or browser APIs.
 
-After mount, the provider starts one scheduler. `Intl.DateTimeFormat` explicitly uses `timeZone: "Asia/Jakarta"`; HH:mm uses 24-hour `h23` formatting, including 00:00 at midnight. Date formatting uses a fixed English presentation locale and the same WIB day. Time is not derived from the browser's local timezone.
+After mount, the provider starts one scheduler. `Intl.DateTimeFormat` explicitly uses `timeZone: "Asia/Jakarta"`; HH:mm uses 24-hour `h23` formatting, including 00:00 at midnight. A fixed English formatter supplies short weekday, numeric day, and short month, assembled as `Sun 25 Oct` without punctuation. The date uses the same WIB day. Only date presentation changed in Phase 4.2; the scheduler is untouched.
 
 An initial client tick replaces the fallback. Each later timeout targets the next minute boundary, avoiding per-second rerenders. Returning to a visible tab refreshes immediately and reschedules the timer. Cleanup removes timers/listeners. Time comes from the browser device clock, so incorrect device time remains possible; no server/external time API is involved.
 
@@ -111,6 +136,8 @@ Tests cover PIN correctness/error/deletion/cancel/relock, physical keyboard supp
 
 Zoom tests use an effective 683x384 CSS viewport plus 200% root text sizing. This is a reflow/enlarged-text approximation, not manual browser-menu zoom. Touch uses Chromium CDP input, not a physical device. Safari, native browser chrome behavior, and real-device animation feel remain manual-review limitations.
 
-Current screenshots are ignored local artifacts at `artifacts/phase-4.1/`. Tests freeze device time to 09:41 WIB for stable visual review while production uses live time. Each viewport generates `lock-<width>x<height>.png`, `passcode-<width>x<height>.png`, `home-<width>x<height>.png`, and `app-<width>x<height>.png`. Dark mobile/desktop variants and enlarged-text Home screenshots are also generated. Earlier phase screenshots remain historical artifacts.
+Current screenshots are ignored local artifacts at `artifacts/phase-4.2/`. Tests freeze device time to 09:41 WIB for stable visual review while production uses live time. Each viewport generates `lock-<width>x<height>.png`, `passcode-<width>x<height>.png`, `home-<width>x<height>.png`, and `app-<width>x<height>.png`. Explicit photo screenshots at 393x852, 430x932, and 1366x768 include the project name in `lock-photo-<width>x<height>-<project>.png`. Dark variants and enlarged-text Home screenshots are also generated. Earlier phase screenshots remain historical artifacts.
+
+Phase 4.2 adds tests for local image bounds and cover cropping, missing-image fallback without layout shift, independent Home choice, no visible unlock instruction, shortcut symmetry/keyboard access, and all 24 hours on 320px width before and after 200% text sizing. The existing swipe, passcode, reduced-motion, accessibility, and fullscreen tests remain in use.
 
 Phase 5 is not included.

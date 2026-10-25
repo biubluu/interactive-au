@@ -6,13 +6,13 @@ afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 describe("WIB clock", () => {
   it("formats explicit Asia/Jakarta 24-hour time regardless of host timezone", () => {
     expect(formatWibClock(Date.parse("2026-10-25T02:41:00Z"))).toMatchObject({
-      time: "09:41", date: "Sunday, October 25", dateKey: "2026-10-25",
+      time: "09:41", date: "Sun 25 Oct", dateKey: "2026-10-25",
     });
   });
 
   it("changes date at WIB midnight and uses 00:00 instead of 24:00", () => {
     expect(formatWibClock(Date.parse("2026-10-25T16:59:59Z"))).toMatchObject({ time: "23:59", dateKey: "2026-10-25" });
-    expect(formatWibClock(Date.parse("2026-10-25T17:00:00Z"))).toMatchObject({ time: "00:00", date: "Monday, October 26", dateKey: "2026-10-26" });
+    expect(formatWibClock(Date.parse("2026-10-25T17:00:00Z"))).toMatchObject({ time: "00:00", date: "Mon 26 Oct", dateKey: "2026-10-26" });
   });
 
   it("aligns one timer to the next minute and removes timers/listeners on cleanup", () => {

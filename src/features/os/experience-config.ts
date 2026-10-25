@@ -1,3 +1,6 @@
+import { DEFAULT_SIMULATION_PIN } from "./os-store";
+import type { WallpaperChoice } from "./os-wallpaper";
+
 export type IconName = "message" | "phone" | "camera" | "photo" | "note" | "calendar" | "map" | "music" | "mail" | "compass" | "settings" | "folder";
 
 export type PlaceholderApp = Readonly<{
@@ -10,14 +13,20 @@ export type PlaceholderApp = Readonly<{
 
 export type ExperienceConfig = Readonly<{
   simulationPin: string;
-  wallpaper: "aurora" | "midnight";
+  lockScreen: Readonly<{ wallpaper: WallpaperChoice; clockColor: string; dateColor: string }>;
+  homeWallpaper: WallpaperChoice;
   apps: readonly PlaceholderApp[];
 }>;
 
 // Display-only PLACEHOLDER configuration, not a virtual app registry.
 export const experienceConfig: ExperienceConfig = {
-  simulationPin: "1111",
-  wallpaper: "aurora",
+  simulationPin: DEFAULT_SIMULATION_PIN,
+  lockScreen: {
+    wallpaper: { image: "/wallpapers/lock-screen.jpg", position: "50% 50%", fallback: "aurora" },
+    clockColor: "#ffffff",
+    dateColor: "#ffffff",
+  },
+  homeWallpaper: { position: "50% 50%", fallback: "aurora" },
   apps: [
     { id: "calendar", name: "Calendar", icon: "calendar", color: "#df564b", placement: "grid" },
     { id: "photos", name: "Photos", icon: "photo", color: "#a4469b", placement: "grid" },

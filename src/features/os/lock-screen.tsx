@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { animate, motion, useDragControls, useIsPresent, useMotionValue, useTransform } from "motion/react";
 import { OsIcon } from "./os-icons";
 import { isUnlockSwipe, osSpring, unlockDistance } from "./os-motion";
 import { useOsReducedMotion } from "./use-os-reduced-motion";
 import { useWibClock } from "./wib-clock-provider";
 
-export function LockScreen({ onUnlock }: Readonly<{ onUnlock: () => void }>) {
+export function LockScreen({ onUnlock, clockColor = "#ffffff", dateColor = "#ffffff" }: Readonly<{
+  onUnlock: () => void; clockColor?: string; dateColor?: string;
+}>) {
   const clock = useWibClock();
   const reduced = useOsReducedMotion();
   const isPresent = useIsPresent();
@@ -59,7 +61,7 @@ export function LockScreen({ onUnlock }: Readonly<{ onUnlock: () => void }>) {
     <motion.div className="os-lock-panel" data-testid="lock-panel"
       drag="y" dragControls={controls} dragListener={false} dragMomentum={false}
       dragConstraints={{ top: -260, bottom: 0 }} dragElastic={0.08}
-      style={{ y: dragY, opacity }}
+      style={{ y: dragY, opacity, ...({ "--lock-clock-color": clockColor, "--lock-date-color": dateColor } as CSSProperties) }}
       transformTemplate={reduced ? () => "none" : undefined}
       onDragStart={() => { gestureMoved.current = true; }}
       onDragEnd={(event, info) => {
@@ -67,7 +69,6 @@ export function LockScreen({ onUnlock }: Readonly<{ onUnlock: () => void }>) {
         else reset();
       }}>
       <header className="os-lock-clock">
-        <span className="os-lock-symbol"><OsIcon name="lock" /></span>
           <p className="os-date"><time dateTime={clock.dateKey || undefined}>{clock.date}</time></p>
           <h1 className="os-clock" aria-label={`Lock Screen, ${clock.time} WIB`}><time data-testid="lock-clock" dateTime={clock.dateTime}>{clock.time}</time></h1>
       </header>
@@ -89,7 +90,6 @@ export function LockScreen({ onUnlock }: Readonly<{ onUnlock: () => void }>) {
             if (event.detail !== 0 && gestureMoved.current) { event.preventDefault(); return; }
             commitUnlock();
           }}>
-          <OsIcon name="arrow" /><span>Swipe up to unlock</span>
         </button>
       </div>
     </motion.div>

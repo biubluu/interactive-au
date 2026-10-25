@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { enterPasscode } from "./helpers";
+import { enterPasscode, simulationPin } from "./helpers";
 
 test.use({ timezoneId: "America/Los_Angeles" });
 
@@ -21,7 +21,7 @@ test("incorrect PIN clears, keyboard delete works, cancel and relock discard dig
   await expect(page.getByRole("button", { name: "Enter passcode", exact: true })).toBeFocused();
   await page.getByRole("button", { name: "Enter passcode", exact: true }).click();
   await expect(page.getByRole("img", { name: "0 of 4 digits entered" })).toBeVisible();
-  await page.keyboard.type("1111");
+  await page.keyboard.type(simulationPin);
   await expect(page.getByRole("heading", { name: "Home Screen", exact: true })).toBeFocused();
   await page.getByRole("button", { name: "Lock device" }).click();
   await page.getByRole("button", { name: "Enter passcode", exact: true }).click();
@@ -49,11 +49,11 @@ test("WIB clock is shared, crosses midnight, and refreshes on visibility without
   await page.clock.runFor(1);
   await expect(page.getByTestId("lock-clock")).toHaveText("23:59");
   await expect(page.getByTestId("status-clock")).toHaveText("23:59");
-  await expect(page.locator(".os-date")).toHaveText("Sunday, October 25");
+  await expect(page.locator(".os-date")).toHaveText("Sun 25 Oct");
   await page.clock.runFor(9_999);
   await expect(page.getByTestId("lock-clock")).toHaveText("00:00");
   await expect(page.getByTestId("status-clock")).toHaveText("00:00");
-  await expect(page.locator(".os-date")).toHaveText("Monday, October 26");
+  await expect(page.locator(".os-date")).toHaveText("Mon 26 Oct");
   await page.clock.setSystemTime(new Date("2026-10-25T20:12:12Z"));
   await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
   await expect(page.getByTestId("lock-clock")).toHaveText("03:12");
